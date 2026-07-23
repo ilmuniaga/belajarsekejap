@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar Sekejap AI Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        aiBlue: '#1E40AF', // Blue 800
+                        aiLightBlue: '#DBEAFE', // Blue 100
+                        aiYellow: '#FBBF24', // Amber 400
+                        aiDarkYellow: '#B45309', // Amber 700
+                    },
+                    boxShadow: {
+                        'clay': '0 8px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(255, 255, 255, 0.5)',
+                        'clay-sm': '0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(0, 0, 0, 0.1), inset 0 2px 0px 0px rgba(255, 255, 255, 0.5)',
+                        'clay-pressed': '0 0px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(255, 255, 255, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #DBEAFE;
+            background-image: radial-gradient(#93C5FD 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        .clay-card {
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 -5px 10px rgba(0,0,0,0.05), inset 0 5px 10px rgba(255,255,255,1);
+            border: 2px solid #E5E7EB;
+        }
+
+        .clay-btn {
+            transition: all 0.1s ease-in-out;
+        }
+        
+        .clay-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(255, 255, 255, 0.2);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SVG Avatars Styling */
+        .avatar-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #FBBF24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1), inset 0 -3px 5px rgba(0,0,0,0.1);
+            border: 3px solid white;
+        }
+
+        /* Input styling */
+        input:focus {
+            outline: none;
+            border-color: #FBBF24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #E5E7EB;
+            border-radius: 9999px;
+            height: 12px;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            background-color: #FBBF24;
+            transition: width 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5);
+        }
+
+        /* Option Buttons */
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            background-color: #F3F4F6;
+            border: 2px solid #E5E7EB;
+            font-weight: 600;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #1F2937;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+            position: relative;
+            box-shadow: 0 4px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #E5E7EB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+            color: #065F46;
+        }
+
+        .option-btn.wrong {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Feedback Box */
+        .feedback-box {
+            display: none;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
+
+    <div class="w-full max-w-md w-full relative">
+        
+        <!-- Header tag line -->
+        <div class="text-center mb-6">
+            <h2 class="text-aiBlue font-extrabold text-xl md:text-2xl drop-shadow-sm">Belajar Sekejap AI</h2>
+            <p class="text-aiBlue font-semibold text-sm">"Belajar Hari Ini, Guna Terus Hari Ini"</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="clay-card p-6 md:p-8 w-full relative overflow-hidden">
+            
+            <div id="start-screen" class="block fade-in">
+                
+                <!-- Claymation-style Avatars (SVG) -->
+                <div class="avatar-container">
+                    <!-- Professional Man Avatar -->
+                    <div class="avatar">
+                        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="40" r="25" fill="#FDE047"/>
+                            <path d="M20 90C20 75 35 65 50 65C65 65 80 75 80 90" stroke="#1E40AF" stroke-width="8" stroke-linecap="round"/>
+                            <circle cx="40" cy="35" r="4" fill="#1E40AF"/>
+                            <circle cx="60" cy="35" r="4" fill="#1E40AF"/>
+                            <path d="M45 45 Q50 50 55 45" stroke="#1E40AF" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 20 Q50 5 70 20" stroke="#1E3A8A" stroke-width="6" stroke-linecap="round"/> <!-- Hair -->
+                        </svg>
+                    </div>
+                    <!-- Hijab Woman Avatar -->
+                    <div class="avatar">
+                        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M25 50 C25 20, 75 20, 75 50 C75 80, 25 80, 25 50 Z" fill="#93C5FD"/> <!-- Hijab -->
+                            <circle cx="50" cy="45" r="20" fill="#FDE047"/> <!-- Face -->
+                            <path d="M20 90C20 75 35 65 50 65C65 65 80 75 80 90" stroke="#1E40AF" stroke-width="8" stroke-linecap="round"/>
+                            <circle cx="42" cy="42" r="3.5" fill="#1E40AF"/>
+                            <circle cx="58" cy="42" r="3.5" fill="#1E40AF"/>
+                            <path d="M46 52 Q50 56 54 52" stroke="#1E40AF" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <h1 class="text-2xl md:text-3xl font-extrabold text-center text-gray-800 mb-2">AI Challenge!</h1>
+                <p class="text-center text-gray-600 mb-6 text-sm md:text-base font-medium">Uji pengetahuan asas anda tentang AI untuk content & bisnes.</p>
+                
+                <div class="mb-6">
+                    <label for="playerName" class="block text-sm font-bold text-gray-700 mb-2">Masukkan Nama Anda:</label>
+                    <input type="text" id="playerName" class="w-full px-4 py-3 rounded-xl border-2 border-gray-300 bg-gray-50 text-lg font-semibold placeholder-gray-400 transition-colors" placeholder="Cth: Ali Bin Abu">
+                    <p id="nameError" class="text-red-500 text-sm mt-1 hidden font-semibold">Sila masukkan nama untuk mula!</p>
+                </div>
+
+                <button onclick="startGame()" class="clay-btn w-full bg-aiYellow text-aiDarkYellow border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2">
+                    Mula Game
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="game-screen" class="hidden fade-in">
+                <!-- Top Bar -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="bg-aiLightBlue text-aiBlue px-3 py-1 rounded-lg font-bold text-sm border border-blue-200">
+                        Soalan: <span id="question-number">1</span>/10
+                    </div>
+                    <div class="bg-yellow-100 text-aiDarkYellow px-3 py-1 rounded-lg font-bold text-sm border border-yellow-200">
+                        Skor: <span id="score-display">0</span>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar" style="width: 10%;"></div>
+                </div>
+
+                <!-- Question -->
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-tight min-h-[5rem] break-words">
+                    <!-- Question goes here -->
+                </h3>
+
+                <!-- Options -->
+                <div id="options-container" class="flex flex-col mb-4">
+                    <!-- Option buttons will be generated here -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="feedback-box">
+                    <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                    <p id="feedback-text" class="text-sm font-medium"></p>
+                </div>
+
+                <!-- Next Button -->
+                <button id="next-btn" onclick="nextQuestion()" class="clay-btn hidden w-full mt-6 bg-aiBlue text-white border-none py-3 px-6 rounded-xl font-bold text-lg shadow-clay flex items-center justify-center gap-2">
+                    Soalan Seterusnya
+                </button>
+            </div>
+
+            <div id="result-screen" class="hidden fade-in text-center">
+                <div class="text-6xl mb-4">🏆</div>
+                <h2 class="text-2xl font-extrabold text-gray-800 mb-2 break-words">Tahniah, <span id="result-name" class="text-aiBlue"></span>!</h2>
+                <p class="text-gray-600 font-medium mb-4">Anda telah tamatkan cabaran.</p>
+
+                <!-- Sijil Penyertaan Box -->
+                <div id="certificate-node" class="relative bg-white border-[6px] border-aiBlue p-6 rounded-2xl text-center mb-6 overflow-hidden shadow-lg">
+                    <div class="absolute inset-0 border-[3px] border-aiYellow m-1.5 rounded-xl pointer-events-none"></div>
+                    
+                    <div class="relative z-10 pt-2">
+                        <h3 class="text-xl font-black text-aiBlue uppercase tracking-wider mb-1 leading-tight">Sijil Penyertaan</h3>
+                        <p class="text-sm font-bold text-gray-800 mb-4 uppercase">Belajar Sekejap AI Challenge</p>
+
+                        <p class="text-xs text-gray-500 mb-1 font-semibold">Dianugerahkan kepada:</p>
+                        <h2 id="cert-name" class="text-2xl font-extrabold text-aiDarkYellow mb-4 border-b-2 border-gray-200 pb-2 inline-block min-w-[80%] break-words"></h2>
+
+                        <p class="text-xs text-gray-600 mb-2 font-semibold">Atas pencapaian menamatkan cabaran dengan markah:</p>
+                        <div class="text-4xl font-black text-aiBlue mb-2 drop-shadow-sm"><span id="cert-score"></span><span class="text-xl text-gray-400">/100</span></div>
+                        <div id="cert-level" class="text-sm font-bold uppercase tracking-widest inline-block px-4 py-1.5 rounded-full border mb-4"></div>
+
+                        <div class="mt-2 flex flex-col items-center border-t-2 border-dashed border-gray-200 pt-4">
+                            <p class="text-sm font-bold text-green-600 mb-1">Tahniah atas usaha anda!</p>
+                            <p class="text-xs font-semibold text-gray-500 mb-3">Tarikh: <span id="cert-date"></span></p>
+                            <p class="text-xs italic text-aiBlue font-bold bg-blue-50 px-3 py-1.5 rounded-lg">"Belajar Hari Ini, Guna Terus Hari Ini"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="motivation-msg" class="text-sm font-semibold text-gray-700 italic mb-6"></p>
+
+                <button id="download-cert-btn" onclick="downloadCertificate()" class="clay-btn w-full bg-aiBlue text-white border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2 mb-4">
+                    Muat Turun Sijil
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+
+                <button onclick="resetGame()" class="clay-btn w-full bg-aiYellow text-aiDarkYellow border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2">
+                    Main Lagi
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+        
+        <!-- Footer note -->
+        <p class="text-center text-aiBlue text-sm font-bold mt-6">📌 Rujuk profile bio untuk lebih info</p>
+    </div>
+
+    <script>
+        // --- 1. Question Data ---
+        const questions = [
+            {
+                topic: "Maksud prompt",
+                question: "Apakah yang dimaksudkan dengan 'Prompt' dalam dunia AI?",
+                options: [
+                    "A) Perisian untuk melukis secara digital",
+                    "B) Arahan atau teks yang diberikan kepada AI",
+                    "C) Jenama komputer riba terbaru",
+                    "D) Kod rahsia pengaturcaraan"
+                ],
+                answerIndex: 1, // B
+                explanation: "Prompt ialah arahan atau soalan yang kita taip untuk beritahu AI apa yang kita mahu ia lakukan."
+            },
+            {
+                topic: "Cara menulis prompt yang jelas",
+                question: "Antara berikut, manakah contoh prompt yang PALING JELAS untuk AI?",
+                options: [
+                    "A) 'Tulis sikit pasal biskut.'",
+                    "B) 'Bantu saya.'",
+                    "C) 'Tuliskan caption Instagram 50 patah perkataan untuk mempromosikan biskut coklat.'",
+                    "D) 'Biskut sedap.'"
+                ],
+                answerIndex: 2, // C
+                explanation: "Prompt yang baik perlu spesifik (ada platform, had perkataan, dan topik yang jelas) supaya AI faham kehendak anda."
+            },
+            {
+                topic: "Fungsi ChatGPT",
+                question: "Apakah fungsi utama ChatGPT?",
+                options: [
+                    "A) Menghasilkan video panjang dari teks",
+                    "B) Menjana teks seperti menulis e-mel, idea, dan artikel",
+                    "C) Mencetak gambar secara fizikal 3D",
+                    "D) Menggodam akaun media sosial"
+                ],
+                answerIndex: 1, // B
+                explanation: "ChatGPT adalah model bahasa AI yang pakar dalam memahami dan menghasilkan teks seperti manusia."
+            },
+            {
+                topic: "Fungsi Gemini",
+                question: "Gemini adalah model AI yang dibangunkan oleh syarikat mana?",
+                options: [
+                    "A) Microsoft",
+                    "B) Apple",
+                    "C) OpenAI",
+                    "D) Google"
+                ],
+                answerIndex: 3, // D
+                explanation: "Gemini ialah AI berkuasa tinggi yang dibangunkan oleh Google, mampu memproses teks, kod, dan gambar."
+            },
+            {
+                topic: "Cara menghasilkan gambar AI",
+                question: "Alat AI manakah yang biasa digunakan untuk MENGHASILKAN GAMBAR dari teks?",
+                options: [
+                    "A) Midjourney",
+                    "B) Microsoft Excel",
+                    "C) Spotify",
+                    "D) Google Maps"
+                ],
+                answerIndex: 0, // A
+                explanation: "Midjourney (dan juga DALL-E) adalah penjana imej AI popular yang mengubah deskripsi teks kepada gambar visual."
+            },
+            {
+                topic: "Cara menghasilkan video AI",
+                question: "Pilih cara yang betul untuk menggunakan AI dalam penghasilan video:",
+                options: [
+                    "A) Meminta AI merakam video anda mandi",
+                    "B) Menggunakan AI (seperti Sora atau Runway) untuk menukar skrip teks kepada babak video",
+                    "C) Mengarahkan AI membeli kamera mahal di kedai",
+                    "D) AI tidak boleh digunakan langsung untuk video"
+                ],
+                answerIndex: 1, // B
+                explanation: "AI generatif video seperti Runway atau Sora boleh mencipta visual video pendek berdasarkan arahan teks anda."
+            },
+            {
+                topic: "Kegunaan Canva dan CapCut",
+                question: "Walaupun Canva dan CapCut adalah alat edit biasa, kedua-duanya kini mempunyai ciri AI. Apakah contoh ciri AI tersebut?",
+                options: [
+                    "A) Menghidupkan enjin kereta",
+                    "B) Magic Eraser (buang objek) atau Auto-Captions (sari kata automatik)",
+                    "C) Menghantar makanan ke rumah",
+                    "D) Memasak resipi baru"
+                ],
+                answerIndex: 1, // B
+                explanation: "Canva ada 'Magic Studio' untuk edit gambar mudah, manakala CapCut ada 'Auto-Captions' untuk hasilkan sari kata video secara automatik."
+            },
+            {
+                topic: "Penggunaan AI untuk content",
+                question: "Bagaimanakah AI patut digunakan oleh Content Creator (Pencipta Kandungan)?",
+                options: [
+                    "A) Salin 100% dari AI tanpa edit",
+                    "B) Sebagai pembantu mencari idea, merangka struktur, dan semak ejaan",
+                    "C) Biarkan AI buat semua kerja dan kita tidur",
+                    "D) Jangan guna AI langsung sebab menipu"
+                ],
+                answerIndex: 1, // B
+                explanation: "AI terbaik digunakan sebagai 'Co-pilot' atau pembantu. Anda masih perlu masukkan sentuhan peribadi dan gaya bahasa anda sendiri."
+            },
+            {
+                topic: "Semakan fakta",
+                question: "Jika AI memberikan fakta atau statistik untuk artikel anda, apakah tindakan terbaik?",
+                options: [
+                    "A) Terus percaya kerana AI sangat pandai",
+                    "B) Padam fakta tersebut kerana semua AI penipu",
+                    "C) Semak semula fakta tersebut di Google atau sumber rasmi",
+                    "D) Tukar nombor statistik itu sesuka hati"
+                ],
+                answerIndex: 2, // C
+                explanation: "AI kadang-kala mengalami 'Hallucination' (reka fakta). Penting untuk sentiasa semak silang fakta dengan sumber sahih."
+            },
+            {
+                topic: "Etika dan keselamatan menggunakan AI",
+                question: "Maklumat apakah yang TIDAK PATUT anda berikan kepada AI awam seperti ChatGPT?",
+                options: [
+                    "A) Resipi nasi lemak",
+                    "B) Kata laluan bank dan maklumat sulit pelanggan",
+                    "C) Idea tajuk untuk video TikTok",
+                    "D) Skrip lakonan"
+                ],
+                answerIndex: 1, // B
+                explanation: "Jangan kongsi maklumat peribadi, kewangan atau rahsia syarikat di AI awam kerana data tersebut mungkin digunakan untuk melatih sistem mereka."
+            }
+        ];
+
+        // --- 2. State Variables ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = "";
+        let hasAnsweredCurrent = false;
+
+        // --- 3. DOM Elements ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen')
+        };
+        
+        const ui = {
+            nameInput: document.getElementById('playerName'),
+            nameError: document.getElementById('nameError'),
+            qNum: document.getElementById('question-number'),
+            score: document.getElementById('score-display'),
+            progBar: document.getElementById('progress-bar'),
+            qText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            feedbackArea: document.getElementById('feedback-area'),
+            feedbackTitle: document.getElementById('feedback-title'),
+            feedbackText: document.getElementById('feedback-text'),
+            nextBtn: document.getElementById('next-btn'),
+            resName: document.getElementById('result-name'),
+            motvMsg: document.getElementById('motivation-msg'),
+            certName: document.getElementById('cert-name'),
+            certScore: document.getElementById('cert-score'),
+            certLevel: document.getElementById('cert-level'),
+            certDate: document.getElementById('cert-date'),
+            downloadBtn: document.getElementById('download-cert-btn')
+        };
+
+        // --- 4. Game Functions ---
+
+        // Try to load name from local storage on init
+        window.onload = () => {
+            try {
+                const savedName = localStorage.getItem('belajarSekejapAIName');
+                if(savedName) {
+                    ui.nameInput.value = savedName;
+                }
+            } catch (e) {
+                console.warn("Local storage tidak tersedia.", e);
+            }
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        function startGame() {
+            playerName = ui.nameInput.value.trim();
+            if (playerName === "") {
+                ui.nameError.classList.remove('hidden');
+                ui.nameInput.focus();
+                return;
+            }
+            
+            // Save name to localStorage safely
+            try {
+                localStorage.setItem('belajarSekejapAIName', playerName);
+            } catch (e) {
+                console.warn("Gagal menyimpan ke local storage.", e);
+            }
+            
+            ui.nameError.classList.add('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScoreDisplay();
+            loadQuestion();
+            showScreen('game');
+        }
+
+        function loadQuestion() {
+            hasAnsweredCurrent = false;
+            const q = questions[currentQuestionIndex];
+            
+            // Update UI Counters
+            ui.qNum.innerText = currentQuestionIndex + 1;
+            ui.progBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            
+            // Set Question Text
+            ui.qText.innerText = q.question;
+            
+            // Clear previous options and feedback
+            ui.optionsContainer.innerHTML = '';
+            ui.feedbackArea.classList.remove('show', 'bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800');
+            ui.nextBtn.classList.add('hidden');
+
+            // Render Options
+            q.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(index, btn);
+                ui.optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (hasAnsweredCurrent) return; // Prevent multiple clicks
+            hasAnsweredCurrent = true;
+
+            const q = questions[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.answerIndex);
+            
+            // Disable all buttons
+            const allBtns = ui.optionsContainer.querySelectorAll('button');
+            allBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.answerIndex) {
+                    btn.classList.add('correct'); // Highlight correct answer always
+                }
+            });
+
+            // Handle Selection Result
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                score += 10;
+                updateScoreDisplay();
+                showFeedback(true, q.explanation);
+                fireConfetti();
+            } else {
+                selectedBtn.classList.add('wrong');
+                showFeedback(false, q.explanation);
+            }
+
+            // Show Next button
+            ui.nextBtn.classList.remove('hidden');
+
+            // Scroll ke bawah sedikit untuk telefon supaya butang Next jelas kelihatan
+            setTimeout(() => {
+                ui.nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function updateScoreDisplay() {
+            ui.score.innerText = score;
+        }
+
+        function showFeedback(isCorrect, explanation) {
+            ui.feedbackArea.classList.add('show');
+            if (isCorrect) {
+                ui.feedbackArea.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-300');
+                ui.feedbackArea.classList.remove('bg-red-100', 'text-red-800', 'border-red-300');
+                ui.feedbackTitle.innerText = "✨ Jawapan Betul!";
+            } else {
+                ui.feedbackArea.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-300');
+                ui.feedbackArea.classList.remove('bg-green-100', 'text-green-800', 'border-green-300');
+                ui.feedbackTitle.innerText = "❌ Jawapan Salah.";
+            }
+            ui.feedbackText.innerText = explanation;
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            showScreen('result');
+            ui.resName.innerText = playerName;
+            
+            // Set Certificate Data
+            ui.certName.innerText = playerName;
+            ui.certScore.innerText = score;
+            
+            // Generate Current Date in BM
+            const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+            const today = new Date();
+            ui.certDate.innerText = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+            
+            // Determine Level
+            let level = "";
+            let motiv = "";
+            let levelStyle = "";
+
+            if (score <= 30) {
+                level = "Baru Bermula 🌱";
+                motiv = "Permulaan yang baik! Teruskan belajar tentang AI sikit demi sikit.";
+                levelStyle = "text-gray-600 bg-gray-100 border-gray-300";
+            } else if (score <= 60) {
+                level = "Sedang Belajar 📚";
+                motiv = "Asas dah ada! Anda dalam landasan yang betul untuk kuasai AI.";
+                levelStyle = "text-blue-700 bg-blue-100 border-blue-300";
+            } else if (score <= 80) {
+                level = "Bijak Guna AI 💡";
+                motiv = "Hebat! Anda sudah faham cara gunakan AI dengan selamat dan berkesan.";
+                levelStyle = "text-green-700 bg-green-100 border-green-300";
+            } else {
+                level = "Juara AI 👑";
+                motiv = "Luar biasa! Anda memang pakar. Jangan lupa kongsi ilmu ini!";
+                levelStyle = "text-yellow-700 bg-yellow-100 border-yellow-400";
+                setTimeout(fireBigConfetti, 500);
+            }
+
+            ui.certLevel.innerText = level;
+            ui.certLevel.className = `text-sm font-bold uppercase tracking-widest inline-block px-4 py-1.5 rounded-full border mb-4 ${levelStyle}`;
+            ui.motvMsg.innerText = motiv;
+        }
+
+        function resetGame() {
+            showScreen('start');
+        }
+
+        function fireConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#1E40AF', '#FBBF24', '#ffffff']
+                });
+            }
+        }
+
+        function fireBigConfetti() {
+             if (typeof confetti === 'function') {
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
+
+                  if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                  }
+
+                  var particleCount = 50 * (timeLeft / duration);
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                  }));
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                  }));
+                }, 250);
+            }
+        }
+
+        // --- 5. Download Certificate Logic ---
+        function downloadCertificate() {
+            const certNode = document.getElementById('certificate-node');
+            const btn = ui.downloadBtn;
+            
+            // Simpan teks asal butang dan tunjuk status loading
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `
+                Sedang Jana...
+                <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            `;
+            btn.disabled = true;
+
+            html2canvas(certNode, {
+                scale: 3, // Skala besar untuk kualiti imej yang tinggi
+                backgroundColor: '#ffffff', // Pastikan background putih pejal
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                // Hasilkan pautan muat turun (Data URL)
+                const link = document.createElement('a');
+                // Buang ruang kosong pada nama untuk nama fail yang kemas
+                const safeName = playerName.replace(/\s+/g, '_'); 
+                link.download = `Sijil_SekejapAI_${safeName}.png`;
+                link.href = canvas.toDataURL('image/png');
+                
+                // Automatik klik untuk mula muat turun
+                link.click();
+                
+                // Kembalikan butang kepada keadaan asal
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }).catch(error => {
+                console.error('Ralat ketika menjana sijil:', error);
+                alert('Maaf, pendaftaran gagal dijana. Sila cuba lagi.');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
