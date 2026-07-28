@@ -2,1403 +2,737 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Peniaga Tangkap Ilmu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar Sekejap AI Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        aiBlue: '#1E40AF', // Blue 800
+                        aiLightBlue: '#DBEAFE', // Blue 100
+                        aiYellow: '#FBBF24', // Amber 400
+                        aiDarkYellow: '#B45309', // Amber 700
+                    },
+                    boxShadow: {
+                        'clay': '0 8px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(255, 255, 255, 0.5)',
+                        'clay-sm': '0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(0, 0, 0, 0.1), inset 0 2px 0px 0px rgba(255, 255, 255, 0.5)',
+                        'clay-pressed': '0 0px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(255, 255, 255, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary-blue: #2563eb;
-            --primary-yellow: #fef08a;
-            --accent-green: #22c55e;
-            --accent-orange: #f97316;
-            --bg-color: #f8fafc;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent scrolling on mobile */
-            touch-action: none; /* Prevent browser handling of gestures like pinch zoom */
+            background-color: #DBEAFE;
+            background-image: radial-gradient(#93C5FD 2px, transparent 2px);
+            background-size: 30px 30px;
         }
 
-        #game-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px; /* Max width for desktop to keep vertical aspect ratio */
-            height: 100vh; /* Fallback for older browsers */
-            height: 100dvh; /* Fix for mobile Safari / Chrome UI */
-            margin: 0 auto;
-            background: linear-gradient(to bottom, #e0f2fe, #bae6fd);
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(255, 255, 255, 0.95);
-            z-index: 10;
-            transition: opacity 0.3s ease;
-        }
-
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        #player {
-            position: absolute;
-            bottom: calc(180px + env(safe-area-inset-bottom, 0px)); /* Ditolak jauh lebih tinggi dari menu Safari */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 150px;
-            /* Default background, will be overridden by JS */
-            background-image: url('character-wanita.png'); 
-            background-size: contain; 
-            background-position: center bottom; 
-            background-repeat: no-repeat;
-            transition: left 0.1s linear, transform 0.1s;
-            z-index: 5;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
-        }
-
-        /* Animation class for capturing */
-        .player-catch {
-            transform: translateX(-50%) translateY(-15px) scale(1.05) !important;
-        }
-
-        /* Animation class for hit */
-        .player-hit {
-            animation: shake 0.5s;
-            filter: drop-shadow(0 4px 6px rgba(239, 68, 68, 0.6));
-        }
-
-        @keyframes shake {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            25% { transform: translateX(-55%) rotate(-5deg); }
-            50% { transform: translateX(-50%) rotate(0deg); }
-            75% { transform: translateX(-45%) rotate(5deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
-        }
-
-        .falling-object {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+        .clay-card {
             background-color: white;
-            border: 2px solid #bfdbfe; /* Bingkai biru lembut untuk ilmu */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            user-select: none;
-            z-index: 4;
-            /* Spin animation for objects */
-            animation: spin 3s linear infinite;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), inset 0 -5px 10px rgba(0,0,0,0.05), inset 0 5px 10px rgba(255,255,255,1);
+            border: 2px solid #E5E7EB;
+        }
+
+        .clay-btn {
+            transition: all 0.1s ease-in-out;
         }
         
-        .falling-object.gangguan {
-             animation: wobble 0.3s linear infinite; /* Bergetar dengan pantas */
-             background-color: #fee2e2; /* Latar belakang kemerahan */
-             border: 3px solid #ef4444; /* Bingkai merah tebal */
-             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5); /* Bayang merah memancar */
-             color: #dc2626 !important; /* Paksa ikon jadi merah */
+        .clay-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px 0px rgba(0, 0, 0, 0.1), inset 0 4px 0px 0px rgba(0, 0, 0, 0.1), inset 0 -2px 0px 0px rgba(255, 255, 255, 0.2);
         }
 
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes wobble {
-            0%, 100% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
 
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 10px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SVG Avatars Styling */
+        .avatar-container {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            z-index: 6;
-            pointer-events: none; /* Let clicks pass through */
-        }
-
-        .ui-box {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: bold;
-            pointer-events: auto;
-        }
-
-        #lives {
-            color: #ef4444;
-            font-size: 1.2rem;
-        }
-
-        #mobile-controls {
-            position: absolute;
-            bottom: calc(90px + env(safe-area-inset-bottom, 0px)); /* Ditolak tinggi melepasi bar bawah Safari */
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 30px; /* Wider padding to avoid edge curved screens */
-            z-index: 7;
-            /* Hide on desktop, show via JS/media query if needed, but we keep it visible for easy testing */
-        }
-
-        .control-btn {
-            width: 70px; /* Slightly larger for Pro Max screens */
-            height: 70px;
-            background: rgba(255, 255, 255, 0.85);
-            border: 3px solid var(--primary-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            color: var(--primary-blue);
-            cursor: pointer;
-            user-select: none;
-            backdrop-filter: blur(4px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Add shadow for better visibility */
-            -webkit-tap-highlight-color: transparent; /* Remove default tap flash on iOS */
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
         
-        .control-btn:active {
-            background: rgba(37, 99, 235, 0.3);
-            transform: scale(0.95);
-        }
-
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.7);
-            border: 2px solid var(--primary-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--primary-blue);
-            cursor: pointer;
-            user-select: none;
-            backdrop-filter: blur(4px);
-        }
-        
-        .control-btn:active {
-            background: rgba(37, 99, 235, 0.3);
-        }
-
-        .floating-text {
-            position: absolute;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: var(--primary-blue);
-            pointer-events: none;
-            z-index: 8;
-            animation: floatUp 1s ease-out forwards;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-30px); }
-        }
-
-        .tip-toast {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(37, 99, 235, 0.95);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            width: 90%;
-            max-width: 400px;
-            z-index: 9;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        /* Character Selection Styles */
-        .char-select-btn {
-            border: 4px solid transparent;
-            transition: all 0.2s;
-        }
-        .char-select-btn.selected {
-            border-color: var(--primary-blue);
-            transform: scale(1.05);
-            background-color: #eff6ff;
-        }
-        
-        /* Sprite preview in main menu */
-        .sprite-preview {
+        .avatar {
             width: 80px;
-            height: 120px;
-            background-size: contain;
-            background-position: center bottom;
-            background-repeat: no-repeat;
-            margin: 0 auto;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #FBBF24;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem; /* Untuk emoji ganti jika gambar tiada */
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1), inset 0 -3px 5px rgba(0,0,0,0.1);
+            border: 3px solid white;
+        }
+
+        /* Input styling */
+        input:focus {
+            outline: none;
+            border-color: #FBBF24;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #E5E7EB;
+            border-radius: 9999px;
+            height: 12px;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            background-color: #FBBF24;
+            transition: width 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5);
+        }
+
+        /* Option Buttons */
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            background-color: #F3F4F6;
+            border: 2px solid #E5E7EB;
+            font-weight: 600;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: #1F2937;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+            position: relative;
+            box-shadow: 0 4px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #E5E7EB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+            color: #065F46;
+        }
+
+        .option-btn.wrong {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+        
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Feedback Box */
+        .feedback-box {
+            display: none;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .feedback-box.show {
+            display: block;
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
 
-<div id="game-container">
-    
-    <!-- Main Menu Screen -->
-    <div id="main-menu" class="screen">
-        <h1 class="text-3xl font-extrabold text-blue-600 mb-2 text-center leading-tight">PENIAGA<br>TANGKAP ILMU</h1>
-        <p class="text-sm text-gray-600 mb-4 font-semibold">Belajar, Tangkap dan Praktikkan!</p>
+    <div class="w-full max-w-md w-full relative">
         
-        <!-- Kotak Matlamat Permainan -->
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-5 w-3/4 max-w-xs text-center shadow-sm">
-            <p class="text-xs text-blue-800 font-extrabold mb-1 tracking-wide">🎯 MATLAMAT MISI</p>
-            <p class="text-[11px] text-gray-700 leading-relaxed">Tangkap ilmu, elak gangguan bisnes, jawab kuiz dan <strong class="text-blue-600 font-bold">kumpul 500 mata</strong> untuk bergelar Peniaga Bijak Digital!</p>
+        <!-- Header tag line -->
+        <div class="text-center mb-6">
+            <h2 class="text-aiBlue font-extrabold text-xl md:text-2xl drop-shadow-sm">Belajar Sekejap AI</h2>
+            <p class="text-aiBlue font-semibold text-sm">"Belajar Hari Ini, Guna Terus Hari Ini"</p>
         </div>
 
-        <input type="text" id="player-name-input" placeholder="Masukkan Nama Anda" class="mb-4 px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 w-3/4 max-w-xs text-center">
-
-        <h3 class="text-md font-bold mb-2">Pilih Watak:</h3>
-        <div class="flex gap-4 mb-6">
-            <button class="char-select-btn selected rounded-xl p-2 flex flex-col items-center bg-white shadow-md w-28" data-char="wanita">
-                <div class="sprite-preview" style="background-image: url('character-wanita.png');"></div>
-                <span class="text-xs font-bold mt-2">Wanita</span>
-            </button>
-            <button class="char-select-btn rounded-xl p-2 flex flex-col items-center bg-white shadow-md w-28" data-char="lelaki">
-                <div class="sprite-preview" style="background-image: url('character-lelaki.png');"></div>
-                <span class="text-xs font-bold mt-2">Lelaki</span>
-            </button>
-        </div>
-
-        <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 mb-3 w-3/4 max-w-xs">Mula Game</button>
-        <button id="how-to-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-6 rounded-full shadow mb-2 w-3/4 max-w-xs text-sm">Cara Bermain</button>
-        <button id="leaderboard-btn" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-6 rounded-full shadow mb-4 w-3/4 max-w-xs text-sm"><i class="fas fa-globe"></i> Carta Juara Global</button>
-        
-        <div class="text-sm font-semibold text-gray-500 mb-4">
-            Markah Tertinggi: <span id="high-score-display" class="text-blue-600">0</span>
-        </div>
-
-        <div class="flex gap-4 mt-auto mb-4">
-            <button id="toggle-sound-menu" class="text-gray-500 hover:text-blue-500 text-xl"><i class="fas fa-volume-up"></i></button>
-            <a href="https://belajarsekejap.com" target="_blank" class="text-xs text-blue-500 hover:underline flex items-center"><i class="fas fa-external-link-alt mr-1"></i> BelajarSekejap.com</a>
-        </div>
-    </div>
-
-    <!-- How to Play Screen -->
-    <div id="how-to-screen" class="screen hidden bg-yellow-50">
-        <h2 class="text-2xl font-bold text-blue-600 mb-4">Cara Bermain</h2>
-        <ul class="text-left text-sm space-y-3 mb-6 px-6 text-gray-700 w-full max-w-xs">
-            <li><i class="fas fa-arrows-alt-h text-blue-500 w-6"></i> Bergerak ke kiri dan kanan.</li>
-            <li><i class="fas fa-book-open text-green-500 w-6"></i> Tangkap objek ilmu (+10).</li>
-            <li><i class="fas fa-times-circle text-red-500 w-6"></i> Elakkan gangguan (-1 nyawa).</li>
-            <li><i class="fas fa-question-circle text-orange-500 w-6"></i> Jawab kuiz selepas tahap.</li>
-            <li><i class="fas fa-trophy text-yellow-500 w-6"></i> Kumpul 500 mata untuk menang!</li>
-        </ul>
-        <div class="text-xs text-gray-500 mb-6 text-center">
-            <strong>Kawalan Komputer:</strong> ⬅️ ➡️ atau A / D<br>
-            <strong>Telefon:</strong> Guna butang di skrin.
-        </div>
-        <button id="close-how-to" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full">Faham!</button>
-    </div>
-
-    <!-- Game UI Layer -->
-    <div id="ui-layer" class="hidden">
-        <div class="flex flex-col gap-1">
-            <div class="ui-box text-sm">Tahap: <span id="level-display" class="text-blue-600">1</span></div>
-            <div class="ui-box text-sm text-gray-600 truncate max-w-[120px]" id="player-name-display">Pemain</div>
-        </div>
-        <div class="flex flex-col items-end gap-1">
-            <div class="ui-box text-lg text-green-600"><i class="fas fa-star text-yellow-400"></i> <span id="score-display">0</span></div>
-            <div class="ui-box" id="lives">
-                <i class="fas fa-heart"></i> <i class="fas fa-heart"></i> <i class="fas fa-heart"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- The Player Character -->
-    <div id="player" class="hidden"></div>
-
-    <!-- Mobile Controls -->
-    <div id="mobile-controls" class="hidden">
-        <div class="control-btn" id="btn-left"><i class="fas fa-chevron-left"></i></div>
-        <div class="control-btn" id="btn-right"><i class="fas fa-chevron-right"></i></div>
-    </div>
-
-    <!-- Tip Toast -->
-    <div id="tip-toast" class="tip-toast">Tip di sini</div>
-
-    <!-- Quiz Screen -->
-    <div id="quiz-screen" class="screen hidden bg-blue-50">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-11/12 max-w-sm text-center">
-            <h2 class="text-xl font-bold text-blue-600 mb-2">Uji Ilmu Anda!</h2>
-            <p id="quiz-question" class="text-sm text-gray-800 mb-4 font-medium">Soalan di sini?</p>
-            <div id="quiz-options" class="flex flex-col gap-2 mb-4">
-                <!-- Options injected by JS -->
-            </div>
-            <div id="quiz-result" class="hidden flex flex-col items-center">
-                <p id="quiz-feedback" class="font-bold text-lg mb-2"></p>
-                <p id="quiz-explanation" class="text-xs text-gray-600 mb-4"></p>
-                <button id="quiz-continue-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full w-full">Teruskan Belajar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Game Over Screen -->
-    <div id="game-over-screen" class="screen hidden bg-red-50">
-        <h2 class="text-3xl font-bold text-red-600 mb-2">JANGAN MENGALAH!</h2>
-        <p class="text-sm text-gray-700 text-center px-4 mb-4 italic">"Peniaga hebat sentiasa belajar dan mencuba lagi."</p>
-        
-        <!-- AI Advice Box (Game Over) -->
-        <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 mb-4 w-3/4 max-w-xs relative shadow-sm">
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 rounded-full px-3 py-0.5 text-[10px] font-bold text-white flex items-center gap-1 shadow whitespace-nowrap">
-                <i class="fas fa-robot"></i> Nasihat AI Gemini
-            </div>
-            <p id="go-ai-advice" class="text-[11px] text-gray-800 text-center italic mt-2 font-medium leading-relaxed">Menjana nasihat khas...</p>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow w-3/4 max-w-xs mb-6">
-            <p class="text-sm mb-1 text-gray-500">Nama: <span id="go-name" class="font-bold text-black"></span></p>
-            <p class="text-sm mb-1 text-gray-500">Markah: <span id="go-score" class="font-bold text-blue-600 text-lg"></span></p>
-            <p class="text-sm mb-1 text-gray-500">Tahap Dicapai: <span id="go-level" class="font-bold text-black"></span></p>
-            <p class="text-sm text-gray-500">Markah Tertinggi: <span id="go-high" class="font-bold text-black"></span></p>
-        </div>
-
-        <button id="retry-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full mb-3 w-3/4 max-w-xs shadow">Cuba Lagi</button>
-        <button id="home-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-full mb-4 w-3/4 max-w-xs text-sm">Kembali ke Menu</button>
-        <a href="https://belajarsekejap.com" target="_blank" class="text-xs text-blue-600 underline">Belajar di BelajarSekejap.com</a>
-    </div>
-
-    <!-- Win Screen -->
-    <div id="win-screen" class="screen hidden bg-green-50">
-        <div id="confetti-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
-        <h2 class="text-2xl font-bold text-green-600 mb-1 mt-4">TAHNIAH!</h2>
-        <p class="text-sm font-bold text-gray-700 mb-4 text-center">ANDA KINI PENIAGA BIJAK DIGITAL!</p>
-        
-        <!-- Win Pose Sprite -->
-        <div id="win-sprite" class="w-[100px] h-[150px] mb-4" style="background-size: contain; background-position: center bottom; background-repeat: no-repeat; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));"></div>
-
-        <!-- AI Advice Box (Win) -->
-        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-3 mb-4 w-11/12 max-w-xs relative shadow-sm">
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-500 rounded-full px-3 py-0.5 text-[10px] font-bold text-white flex items-center gap-1 shadow whitespace-nowrap">
-                <i class="fas fa-robot"></i> Nasihat AI Gemini
-            </div>
-            <p id="win-ai-advice" class="text-[11px] text-gray-800 text-center italic mt-2 font-medium leading-relaxed">Menjana nasihat khas...</p>
-        </div>
-
-        <!-- Mini Certificate -->
-        <div class="bg-white border-4 border-yellow-400 p-4 rounded-lg shadow-lg text-center w-11/12 max-w-xs mb-4 relative">
-            <i class="fas fa-medal text-yellow-400 text-3xl absolute -top-5 left-1/2 transform -translate-x-1/2 bg-white rounded-full p-1"></i>
-            <h3 class="text-sm font-bold text-blue-800 mt-2 border-b pb-1">SIJIL PENIAGA BIJAK DIGITAL</h3>
-            <p class="text-[10px] text-gray-500 mt-2">Dengan ini mengesahkan bahawa:</p>
-            <p id="cert-name" class="font-bold text-lg text-gray-800 my-1 font-serif"></p>
-            <p class="text-[10px] text-gray-500">telah berjaya menyelesaikan permainan<br>Peniaga Tangkap Ilmu.</p>
-            <p class="text-[9px] text-gray-400 mt-2">Disediakan oleh: BelajarSekejap.com</p>
-        </div>
-
-        <div class="flex flex-wrap justify-center gap-2 mb-4 w-full px-4">
-            <button id="win-play-again" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full text-sm flex-1">Main Lagi</button>
-            <button id="win-home" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-full text-sm flex-1">Menu</button>
-        </div>
-
-        <div class="bg-blue-100 p-3 rounded-lg text-center w-11/12 max-w-xs mb-2">
-            <p class="text-xs font-bold text-blue-800 mb-2">Nak Belajar AI Dengan Cara Mudah?</p>
-            <a href="https://belajarsekejap.com" target="_blank" class="inline-block bg-blue-600 text-white font-bold py-2 px-4 rounded-full text-xs shadow hover:bg-blue-700">JOM BELAJAR SEKARANG</a>
-            <p class="text-[9px] text-gray-500 mt-1">Belajar Hari Ini, Guna Terus Hari Ini.</p>
-        </div>
-    </div>
-    
-    <!-- Leaderboard Screen -->
-    <div id="leaderboard-screen" class="screen hidden bg-blue-50">
-        <div class="bg-white p-6 rounded-2xl shadow-xl w-11/12 max-w-sm text-center flex flex-col max-h-[85vh]">
-            <h2 class="text-xl font-bold text-blue-600 mb-4"><i class="fas fa-trophy text-yellow-400"></i> Carta Juara Global</h2>
-            <div class="flex justify-between border-b pb-2 mb-2 text-xs font-bold text-gray-500 px-2">
-                <span>Pemain</span>
-                <span>Markah</span>
-            </div>
-            <div id="leaderboard-list" class="overflow-y-auto flex-1 mb-4 flex flex-col gap-2 text-left min-h-[200px]">
-                <p class="text-sm text-gray-500 text-center py-4">Memuatkan data...</p>
-            </div>
-            <button id="close-leaderboard" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
-        </div>
-    </div>
-    
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    /**
-     * PENIAGA TANGKAP ILMU - MAIN GAME SCRIPT
-     */
-
-    // --- Configuration & Constants ---
-    
-    // IMAGE ASSETS CONFIGURATION
-    // Change these filenames if you upload new images
-    const femaleCharacterImage = "character-wanita.png";
-    const maleCharacterImage = "character-lelaki.png";
-    
-    // SPRITE CONFIGURATION
-    // Based on the provided sprite sheet structure (7 poses)
-    // 0: Pandangan Depan (16.66%)
-    // 1: Pandangan Kiri (33.33%) - Not used here
-    // 2: Pandangan Kanan (50%) - Not used here
-    // 3: Menangkap Ilmu (66.66%)
-    // 4: Terkena Halangan (83.33%)
-    // 5: Menang (100%)
-    const POSES = {
-        idle: '16.66%',
-        catch: '66.66%',
-        hit: '83.33%',
-        win: '100%'
-    };
-
-    const TARGET_SCORE = 500;
-    const LEVELS = {
-        1: { target: 100, speed: 2, spawnRate: 1500, bg: 'linear-gradient(to bottom, #fef08a, #fde047)' },
-        2: { target: 250, speed: 3.5, spawnRate: 1000, bg: 'linear-gradient(to bottom, #dbeafe, #93c5fd)' },
-        3: { target: 500, speed: 5, spawnRate: 700, bg: 'linear-gradient(to bottom, #cffafe, #67e8f9)' }
-    };
-
-    // Objek Ilmu Data
-    const ilmuObjects = [
-        { type: 'normal', icon: 'fa-book', color: '#3b82f6', score: 10 }, // Buku
-        { type: 'normal', icon: 'fa-lightbulb', color: '#eab308', score: 10 }, // Mentol
-        { type: 'normal', icon: 'fa-robot', color: '#6366f1', score: 10 }, // AI
-        { type: 'normal', icon: 'fa-mobile-alt', color: '#ec4899', score: 10 }, // Phone
-        { type: 'normal', icon: 'fa-certificate', color: '#10b981', score: 10 }, // Sijil
-        { type: 'normal', icon: 'fa-bullhorn', color: '#f97316', score: 10 }, // Marketing
-        { type: 'normal', icon: 'fa-chart-line', color: '#06b6d4', score: 10 }, // Growth
-        { type: 'normal', icon: 'fa-users', color: '#8b5cf6', score: 10 }, // Customers
-        // Bonus Objects
-        { type: 'bonus', icon: 'fa-medal', color: '#fbbf24', score: 30, text: 'Sijil Emas' },
-        { type: 'bonus', icon: 'fa-robot', color: '#fbbf24', score: 50, text: 'AI Emas' },
-        { type: 'bonus', icon: 'fa-graduation-cap', color: '#2563eb', score: 100, text: 'BelajarSekejap' }
-    ];
-
-    // Objek Gangguan Data
-    const gangguanObjects = [
-        { icon: 'fa-box-open', color: '#dc2626', text: 'Nanti Dulu' },
-        { icon: 'fa-question', color: '#dc2626', text: 'Tak Tahu' },
-        { icon: 'fa-bed', color: '#dc2626', text: 'Malas' },
-        { icon: 'fa-file-invoice-dollar', color: '#dc2626', text: 'Bil Tunggak' },
-        { icon: 'fa-wifi', color: '#dc2626', text: 'Internet Slow' },
-        { icon: 'fa-bomb', color: '#991b1b', text: 'Masalah' }
-    ];
-
-    // Funny quotes for hits
-    const hitQuotes = [
-        "Aduh, jangan tangguh lagi!",
-        "Peniaga hebat terus belajar!",
-        "Tak tahu bukan masalah, tak mahu belajar itu masalah!",
-        "Bangun semula, masih ada peluang!",
-        "Jangan bagi alasan menang!",
-        "Pelanggan tunggu, ilmu jangan ditangguh!"
-    ];
-
-    // Tips Data (Kamus Mini & Tips)
-    const tipsData = [
-        "📚 ISTILAH: 'B-Roll' ialah visual tambahan/sisipan untuk elak penonton bosan tengok muka anda sahaja.",
-        "📚 ISTILAH: 'Hook' ialah 3 saat terawal video. Mesti tarik perhatian supaya video tak di-'scroll'!",
-        "📚 ISTILAH: 'Prompt' ialah arahan teks yang ditaip kepada AI (seperti ChatGPT/Gemini) untuk minta idea.",
-        "📚 ISTILAH: 'CTA' (Call to Action) ialah arahan di hujung video contohnya 'Komen di bawah' atau 'Tekan Link'.",
-        "📚 ISTILAH: 'Auto-caption' ialah teks sari kata yang keluar sendiri mengikut suara (boleh buat di CapCut).",
-        "📚 ISTILAH: 'Thumbnail' ialah gambar kulit hadapan video sebelum penonton tekan butang 'play'.",
-        "💡 TIPS: Gunakan ChatGPT sebagai 'copywriter' peribadi anda untuk tulis skrip video.",
-        "💡 TIPS: Rakaman audio yang jelas lebih penting daripada video 4K tetapi bergema.",
-        "💡 TIPS: Canva ada banyak template percuma untuk buat Thumbnail dan grafik content.",
-        "💡 TIPS: Konsisten muat naik video supaya pelanggan sentiasa ingat jenama anda."
-    ];
-
-    // Quiz Data
-    const quizData = [
-        { q: "Berapa jumlah langkah (step) dalam aliran kerja (workflow) pembuatan video Reels AI di modul ini?", options: ["5 langkah", "7 langkah", "10 langkah", "3 langkah"], a: 1, exp: "Terdapat 7 langkah dalam workflow penuh pembuatan video Reels AI." },
-        { q: "Apakah fungsi 'Style Instruction' yang dibuat oleh Claude AI untuk setiap watak?", options: ["Menentukan bahasa yang digunakan watak", "Mengawal watak suara (nada, emosi, gaya bercakap) di Google AI Studio", "Mengawal tahap bunyi (volume) watak", "Menentukan durasi video"], a: 1, exp: "Style Instruction membantu AI mengawal karakter suara seperti nada, emosi, dan gaya bercakap supaya lebih 'hidup'." },
-        { q: "Berapa semitones yang perlu dinaikkan di Audacity supaya suara AI kedengaran seperti suara kanak-kanak?", options: ["2 Semitones", "4 Semitones", "8 Semitones", "6 Semitones"], a: 1, exp: "Naikkan 4 Semitones di Audacity untuk mendapatkan tona suara seperti kanak-kanak secara semula jadi." },
-        { q: "Apakah nisbah aspek (aspect ratio) yang digunakan di Google Flow untuk membuat gambar Instagram Reels (menegak)?", options: ["16:9", "1:1", "9:16", "4:3"], a: 2, exp: "Nisbah (Aspect ratio) 9:16 adalah format menegak yang standard untuk Instagram Reels dan TikTok." },
-        { q: "Apakah alat (tool) yang digunakan untuk menukar gambar statik menjadi video animasi?", options: ["Canva", "Google Flow", "Dreamina AI", "Audacity"], a: 2, exp: "Dreamina AI merupakan aplikasi yang berkuasa untuk mengubah gambar statik (pegun) menjadi video animasi." },
-        { q: "Apakah elemen-elemen di dalam Master Formula prompt gambar?", options: ["SUBJECT + SCENE + STYLE + LIGHTING + CAMERA + QUALITY", "SUBJECT + COLOR + FONT + RESOLUTION"], a: 0, exp: "Formula yang lengkap dan tepat adalah: Subject, Scene, Style, Lighting, Camera, dan Quality." },
-        { q: "Gaya (Style) manakah yang paling sesuai untuk kandungan bercerita (storytelling) Islamik?", options: ["Cinematic — seperti filem, dramatik, depth of field", "Pixel Art — retro, berkotak, 8-bit"], a: 0, exp: "Gaya Cinematic memberikan kesan yang dramatik, serius, dan akrab seakan-akan filem sebenar." },
-        { q: "Pencahayaan (Lighting) apakah yang paling sesuai untuk suasana Islamik yang hangat?", options: ["Golden Hour — suam, mesra, keemasan", "Neon Light — terang, moden, futuristik"], a: 0, exp: "Pencahayaan Golden Hour memberikan pantulan yang suam (warm), mesra, dan bersinar keemasan." },
-        { q: "Apakah fungsi utama Negative Prompt?", options: ["Memberitahu AI apa yang TIDAK Boleh muncul di dalam gambar", "Menambah kesan khas pada gambar"], a: 0, exp: "Negative Prompt sangat berguna untuk menapis/menghalang elemen yang kita tidak mahu AI masukkan dalam gambar." },
-        { q: "Apakah kunci utama untuk mengekalkan konsistensi watak pada setiap gambar?", options: ["Menggunakan huraian fizikal yang TEPAT SAMA dalam setiap prompt", "Menggunakan nombor seed (seed number) yang sama"], a: 0, exp: "Kunci utama untuk watak yang konsisten adalah menggunakan huraian fizikal yang sebiji sama untuk setiap arahan prompt." },
-        { q: "Untuk menghasilkan video AI yang pergerakannya spesifik, dokumen apakah yang biasanya diperlukan?", options: ["Image prompt sebagai rujukan visual dan text prompt untuk arahan pergerakan", "Hanya gambar (Image prompt) tanpa arahan tambahan"], a: 0, exp: "Kedua-duanya diperlukan: Image prompt untuk panduan bentuk visual, dan text prompt untuk arahan pergerakan." },
-        { q: "Yang manakah antara berikut merupakan contoh prompt Pergerakan Kamera (Camera Movement)?", options: ["Tracking shot following subject", "Golden hour lighting, high detail"], a: 0, exp: "'Tracking shot following subject' secara jelas memberikan arahan bagaimana kamera patut bergerak dalam video." },
-        { q: "Apakah tujuan teknikal penggunaan 'Zoom In' pada animasi sinematik?", options: ["Menarik fokus penonton pada perincian atau emosi watak secara spesifik", "Membuat gambar kelihatan menjauh supaya kawasan sekeliling kelihatan luas"], a: 0, exp: "Zoom In memfokuskan mata penonton kepada perincian atau emosi (wajah) watak tertentu." },
-        { q: "Bagaimanakah cara paling selamat menghasilkan video AI yang tidak 'meleleh' (morphing)?", options: ["Gunakan animasi halus (subtle animation) pada objek dan biarkan kamera yang lebih banyak bergerak", "Ubah prompt menjadi pergerakan yang lincah dan pantas"], a: 0, exp: "Pergerakan perlahan (subtle animation) pada subjek mengelakkan kecacatan video. Biarkan kamera sahaja yang 'pan' atau 'zoom'." },
-        { q: "Apakah fungsi Upscaling pada hasil video AI?", options: ["Memperhalus piksel dan meningkatkan kadar bingkai (fps) supaya kualiti video kelihatan HD dan lancar", "Hanya untuk menukar video berwarna menjadi hitam putih"], a: 0, exp: "Upscaling (naik taraf resolusi) akan mencantikkan piksel dan melancarkan kadar bingkai agar video nampak HD." },
-        { q: "Apakah tujuan utama penggunaan Voice Over AI?", options: ["Untuk menggantikan manusia sepenuhnya dalam semua pekerjaan", "Untuk menukar teks kepada suara narasi dengan cepat tanpa perlu rakaman manual"], a: 1, exp: "Ia menjimatkan masa merekod! Anda hanya perlu taip skrip, dan AI akan tukarkannya kepada suara manusia." },
-        { q: "Apakah kandungan Formula Prompt yang betul untuk Voice Over?", options: ["[CHARACTER] + [EMOTION] + [STYLE] + [PACING]", "[TEXT] + [MUSIC] + [SOUND EFFECT] + [SPEED]"], a: 0, exp: "Formula yang berkesan: Tentukan [Watak], [Emosi], [Gaya/Style], dan [Kelajuan/Pacing]." },
-        { q: "Berapa semitones yang dicadangkan untuk menaikkan pic (pitch) suara kanak-kanak perempuan di Audacity?", options: ["10 hingga 15 semitones", "3 hingga 4 semitones"], a: 1, exp: "Menaikkan pic sebanyak 3 ke 4 semitones sudah cukup untuk menghasilkan suara seakan kanak-kanak tanpa kedengaran pelik." },
-        { q: "Apakah perbezaan utama antara Ambience dan Foley?", options: ["Ambience = suara latar (hujan, bandar), Foley = bunyi aksi (langkah kaki, pintu)", "Ambience = bunyi muzik, Foley = bunyi vokal"], a: 0, exp: "Ambience menetapkan mood (bunyi bilik/hujan). Foley pula ialah kesan bunyi aksi fizikal spesifik (pintu ditutup/langkah kaki)." },
-        { q: "Apakah elemen terpenting dalam prompt SFX supaya hasilnya tepat?", options: ["Huraian yang spesifik: jenis bunyi, sumber, watak, mood", "Menggunakan prompt sependek yang mungkin"], a: 0, exp: "SFX (Sound Effects) perlukan perincian yang tepat. Jelaskan jenis, punca, perwatakan, dan mood bunyi tersebut." },
-        { q: "Berapa lapisan (layer) bunyi yang ideal untuk kebanyakan babak (scene)?", options: ["2-3 lapisan (base + detail + accent)", "Minimum 5 lapisan supaya kedengaran profesional"], a: 0, exp: "Biasanya gabungan 2-3 lapisan (Base/Ambience + Detail + Accent) sudah memadai untuk kedengaran penuh." },
-        { q: "Apakah yang dimaksudkan dengan 'room tone' dalam ambience sinematik?", options: ["Bunyi asas bilik kosong (penghawa dingin, resonans) yang memberi kesan 'ruang nyata'", "Nada muzik yang dimainkan di dalam bilik"], a: 0, exp: "Room tone ialah bunyi asas senyap yang 'berbunyi' di sesebuah bilik seperti dengungan penghawa dingin." },
-        { q: "Berapakah peratusan bunyi (volume) yang ideal untuk Sound Effect berbanding Voice Over?", options: ["10-15% — SFX tidak boleh menenggelamkan voice over", "80-90% — SFX mesti kedengaran dominan"], a: 0, exp: "Sound Effect harus di tahap latar (10-15%) supaya mesej dalam Voice Over (suara pencerita) dapat didengar dengan jelas." },
-        { q: "Berapakah tempoh masa (durasi) yang ideal untuk 'Hook' dalam sesebuah video Reels?", options: ["3 saat terawal", "10-15 saat"], a: 0, exp: "3 saat terawal amat kritikal! Ini adalah waktu penentu sama ada penonton terus menonton atau 'scroll' ke video lain." },
-        { q: "Apakah susunan terbaik semasa memulakan proses suntingan (editing) video naratif?", options: ["Masukkan Voice Over (Audio) dahulu sebagai asas, kemudian barulah susun potongan videonya", "Susun urutan videonya dahulu sehingga kemas, kemudian baru rakam Voice Over"], a: 0, exp: "Audio yang menentukan jalan cerita. Masukkan Voice Over dahulu, kemudian cantumkan potongan video mengikut alunan suara." },
-        { q: "Di manakah posisi yang paling selamat untuk meletakkan sari kata (subtitle) pada video Reels/TikTok?", options: ["Di tengah skrin agak ke bawah, tetapi tidak sampai menyentuh sempadan bawah (Safe Zone)", "Di bahagian paling bawah skrin supaya tidak menutupi wajah watak"], a: 0, exp: "Letak pada zon selamat (Safe Zone) supaya subtitle tidak terlindung oleh butang Like/Komen atau kapsyen profil." },
-        { q: "Bagaimanakah cara menguruskan audio (VO) pada milisaat terawal video Reels?", options: ["Buang ruang senyap (jeda) di awal video, suara pencerita (narator) terus masuk pada masa itu juga", "Berikan jeda senyap 2-3 saat supaya penonton bersedia untuk mendengar"], a: 0, exp: "Penonton di media sosial tidak sabar. Buang ruang senyap di depan supaya video anda terus 'menarik perhatian' tanpa lengah!" },
-        { q: "Mengapakah tidak digalakkan mengeksport (export) video Reels dalam resolusi 4K?", options: ["Kerana Instagram secara automatik akan memampatkan (compress) format 4K secara ekstrem, hasilnya sering patah-patah", "Kerana 4K membuatkan algoritma Instagram sukar mengesyorkan video"], a: 0, exp: "Resolusi 1080p lebih stabil. Muat naik format 4K selalunya akan dikecilkan secara ekstrem oleh sistem sehingga video jadi rosak." }
-    ];
-
-    // --- State Variables ---
-    let gameState = {
-        isRunning: false,
-        score: 0,
-        lives: 3,
-        level: 1,
-        playerName: '',
-        character: 'wanita', // default
-        objectsCaught: 0,
-        isPaused: false
-    };
-
-    let playerPos = { x: 50 }; // Percentage
-    let moveInterval;
-    let spawnInterval;
-    let gameLoopRef;
-    let fallingElements = [];
-    
-    // Audio Context Setup
-    let audioCtx = null;
-    let soundEnabled = true;
-
-    // --- DOM Elements ---
-    const container = document.getElementById('game-container');
-    const playerEl = document.getElementById('player');
-    const screens = {
-        main: document.getElementById('main-menu'),
-        howto: document.getElementById('how-to-screen'),
-        ui: document.getElementById('ui-layer'),
-        quiz: document.getElementById('quiz-screen'),
-        gameover: document.getElementById('game-over-screen'),
-        win: document.getElementById('win-screen'),
-        leaderboard: document.getElementById('leaderboard-screen')
-    };
-    
-    // UI Updates
-    const displays = {
-        score: document.getElementById('score-display'),
-        lives: document.getElementById('lives'),
-        level: document.getElementById('level-display'),
-        name: document.getElementById('player-name-display'),
-        highScore: document.getElementById('high-score-display')
-    };
-
-    // --- Audio System (Synthesized) ---
-    function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
-
-    function playSound(type) {
-        if (!soundEnabled || !audioCtx) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-
-        const now = audioCtx.currentTime;
-
-        switch(type) {
-            case 'catch':
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now);
-                osc.stop(now + 0.1);
-                break;
-            case 'bonus':
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.setValueAtTime(600, now + 0.1);
-                osc.frequency.setValueAtTime(800, now + 0.2);
-                gainNode.gain.setValueAtTime(0.4, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.4);
-                osc.start(now);
-                osc.stop(now + 0.4);
-                break;
-            case 'hit':
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
-                gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-                break;
-            case 'win':
-                osc.type = 'square';
-                // Simple arpeggio
-                [300, 400, 500, 600, 800].forEach((freq, i) => {
-                    osc.frequency.setValueAtTime(freq, now + (i*0.1));
-                });
-                gainNode.gain.setValueAtTime(0.2, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.6);
-                osc.start(now);
-                osc.stop(now + 0.6);
-                break;
-            case 'correct':
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.setValueAtTime(1200, now + 0.1);
-                gainNode.gain.setValueAtTime(0.3, now);
-                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now);
-                osc.stop(now + 0.3);
-                break;
-        }
-    }
-
-    // --- Global Firebase Logic (Carta Juara Global) ---
-    let db, auth, appId;
-    let isFirebaseReady = false;
-    let globalLeaderboardData = [];
-
-    async function initFirebase() {
-        if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
-            try {
-                appId = __app_id;
-                const app = initializeApp(JSON.parse(__firebase_config));
-                db = getFirestore(app);
-                auth = getAuth(app);
+        <!-- Main Card -->
+        <div class="clay-card p-6 md:p-8 w-full relative overflow-hidden">
+            
+            <div id="start-screen" class="block fade-in">
                 
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    await signInWithCustomToken(auth, token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                isFirebaseReady = true;
-                listenToLeaderboard();
-            } catch (error) {
-                console.error("Gagal menyambung ke pangkalan data:", error);
-            }
-        } else {
-            console.log("Sistem pangkalan data tidak dikonfigurasi. Hanya berjalan dalam mod lokal.");
-        }
-    }
-
-    function listenToLeaderboard() {
-        if (!auth.currentUser) return;
-        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'));
-        onSnapshot(q, (snapshot) => {
-            const scores = [];
-            snapshot.forEach(doc => scores.push(doc.data()));
-            
-            // Susun markah (Dari paling tinggi ke paling rendah)
-            scores.sort((a, b) => b.score - a.score || a.timestamp - b.timestamp);
-            
-            // Paparkan Top 20 Pemain Sahaja
-            globalLeaderboardData = scores.slice(0, 20);
-            renderLeaderboard();
-        }, (error) => {
-            console.error("Ralat membaca carta juara:", error);
-        });
-    }
-
-    function renderLeaderboard() {
-        const listEl = document.getElementById('leaderboard-list');
-        listEl.innerHTML = '';
-        
-        if (globalLeaderboardData.length === 0) {
-            listEl.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Belum ada rekod. Jadilah yang pertama!</p>';
-            return;
-        }
-
-        globalLeaderboardData.forEach((data, index) => {
-            let rankBadge = `<span class="w-6 font-bold text-gray-500">${index + 1}.</span>`;
-            if (index === 0) rankBadge = `<span class="w-6 text-yellow-500"><i class="fas fa-crown"></i></span>`;
-            else if (index === 1) rankBadge = `<span class="w-6 text-gray-400"><i class="fas fa-medal"></i></span>`;
-            else if (index === 2) rankBadge = `<span class="w-6 text-amber-600"><i class="fas fa-medal"></i></span>`;
-
-            const item = document.createElement('div');
-            item.className = 'flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-200';
-            item.innerHTML = `
-                <div class="flex items-center gap-2 overflow-hidden">
-                    ${rankBadge}
-                    <span class="text-sm font-bold text-gray-800 truncate" style="max-width: 150px;">${data.name || 'Peniaga'}</span>
+                <!-- Claymation-style Avatars (SVG) -->
+                <div class="avatar-container">
+                    <!-- Professional Man Avatar -->
+                    <div class="avatar">
+                        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="40" r="25" fill="#FDE047"/>
+                            <path d="M20 90C20 75 35 65 50 65C65 65 80 75 80 90" stroke="#1E40AF" stroke-width="8" stroke-linecap="round"/>
+                            <circle cx="40" cy="35" r="4" fill="#1E40AF"/>
+                            <circle cx="60" cy="35" r="4" fill="#1E40AF"/>
+                            <path d="M45 45 Q50 50 55 45" stroke="#1E40AF" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M30 20 Q50 5 70 20" stroke="#1E3A8A" stroke-width="6" stroke-linecap="round"/> <!-- Hair -->
+                        </svg>
+                    </div>
+                    <!-- Hijab Woman Avatar -->
+                    <div class="avatar">
+                        <svg width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M25 50 C25 20, 75 20, 75 50 C75 80, 25 80, 25 50 Z" fill="#93C5FD"/> <!-- Hijab -->
+                            <circle cx="50" cy="45" r="20" fill="#FDE047"/> <!-- Face -->
+                            <path d="M20 90C20 75 35 65 50 65C65 65 80 75 80 90" stroke="#1E40AF" stroke-width="8" stroke-linecap="round"/>
+                            <circle cx="42" cy="42" r="3.5" fill="#1E40AF"/>
+                            <circle cx="58" cy="42" r="3.5" fill="#1E40AF"/>
+                            <path d="M46 52 Q50 56 54 52" stroke="#1E40AF" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                 </div>
-                <span class="text-sm font-extrabold text-blue-600">${data.score}</span>
-            `;
-            listEl.appendChild(item);
-        });
-    }
 
-    async function saveGlobalScore() {
-        // Simpan markah terus ke database jika lebih daripada 0
-        if (isFirebaseReady && auth && auth.currentUser && gameState.score > 0) {
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), {
-                    name: gameState.playerName || 'Peniaga',
-                    score: gameState.score,
-                    timestamp: Date.now()
-                });
-            } catch (error) {
-                console.error("Gagal menyimpan markah:", error);
+                <h1 class="text-2xl md:text-3xl font-extrabold text-center text-gray-800 mb-2">AI Challenge!</h1>
+                <p class="text-center text-gray-600 mb-6 text-sm md:text-base font-medium">Uji pengetahuan asas anda tentang AI untuk content & bisnes.</p>
+                
+                <div class="mb-6">
+                    <label for="playerName" class="block text-sm font-bold text-gray-700 mb-2">Masukkan Nama Anda:</label>
+                    <input type="text" id="playerName" class="w-full px-4 py-3 rounded-xl border-2 border-gray-300 bg-gray-50 text-lg font-semibold placeholder-gray-400 transition-colors" placeholder="Cth: Ali Bin Abu">
+                    <p id="nameError" class="text-red-500 text-sm mt-1 hidden font-semibold">Sila masukkan nama untuk mula!</p>
+                </div>
+
+                <button onclick="startGame()" class="clay-btn w-full bg-aiYellow text-aiDarkYellow border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2">
+                    Mula Game
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="game-screen" class="hidden fade-in">
+                <!-- Top Bar -->
+                <div class="flex justify-between items-center mb-4">
+                    <div class="bg-aiLightBlue text-aiBlue px-3 py-1 rounded-lg font-bold text-sm border border-blue-200">
+                        Soalan: <span id="question-number">1</span>/10
+                    </div>
+                    <div class="bg-yellow-100 text-aiDarkYellow px-3 py-1 rounded-lg font-bold text-sm border border-yellow-200">
+                        Skor: <span id="score-display">0</span>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar" style="width: 10%;"></div>
+                </div>
+
+                <!-- Question -->
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-6 leading-tight min-h-[5rem] break-words">
+                    <!-- Question goes here -->
+                </h3>
+
+                <!-- Options -->
+                <div id="options-container" class="flex flex-col mb-4">
+                    <!-- Option buttons will be generated here -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="feedback-box">
+                    <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                    <p id="feedback-text" class="text-sm font-medium"></p>
+                </div>
+
+                <!-- Next Button -->
+                <button id="next-btn" onclick="nextQuestion()" class="clay-btn hidden w-full mt-6 bg-aiBlue text-white border-none py-3 px-6 rounded-xl font-bold text-lg shadow-clay flex items-center justify-center gap-2">
+                    Soalan Seterusnya
+                </button>
+            </div>
+
+            <div id="result-screen" class="hidden fade-in text-center">
+                <div class="text-6xl mb-4">🏆</div>
+                <h2 class="text-2xl font-extrabold text-gray-800 mb-2 break-words">Tahniah, <span id="result-name" class="text-aiBlue"></span>!</h2>
+                <p class="text-gray-600 font-medium mb-4">Anda telah tamatkan cabaran.</p>
+
+                <!-- Sijil Penyertaan Box -->
+                <div id="certificate-node" class="relative bg-white border-[6px] border-aiBlue p-6 rounded-2xl text-center mb-6 overflow-hidden shadow-lg">
+                    <div class="absolute inset-0 border-[3px] border-aiYellow m-1.5 rounded-xl pointer-events-none"></div>
+                    
+                    <div class="relative z-10 pt-2">
+                        <h3 class="text-xl font-black text-aiBlue uppercase tracking-wider mb-1 leading-tight">Sijil Penyertaan</h3>
+                        <p class="text-sm font-bold text-gray-800 mb-4 uppercase">Belajar Sekejap AI Challenge</p>
+
+                        <p class="text-xs text-gray-500 mb-1 font-semibold">Dianugerahkan kepada:</p>
+                        <h2 id="cert-name" class="text-2xl font-extrabold text-aiDarkYellow mb-4 border-b-2 border-gray-200 pb-2 inline-block min-w-[80%] break-words"></h2>
+
+                        <p class="text-xs text-gray-600 mb-2 font-semibold">Atas pencapaian menamatkan cabaran dengan markah:</p>
+                        <div class="text-4xl font-black text-aiBlue mb-2 drop-shadow-sm"><span id="cert-score"></span><span class="text-xl text-gray-400">/100</span></div>
+                        <div id="cert-level" class="text-sm font-bold uppercase tracking-widest inline-block px-4 py-1.5 rounded-full border mb-4"></div>
+
+                        <div class="mt-2 flex flex-col items-center border-t-2 border-dashed border-gray-200 pt-4">
+                            <p class="text-sm font-bold text-green-600 mb-1">Tahniah atas usaha anda!</p>
+                            <p class="text-xs font-semibold text-gray-500 mb-3">Tarikh: <span id="cert-date"></span></p>
+                            <p class="text-xs italic text-aiBlue font-bold bg-blue-50 px-3 py-1.5 rounded-lg">"Belajar Hari Ini, Guna Terus Hari Ini"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="motivation-msg" class="text-sm font-semibold text-gray-700 italic mb-6"></p>
+
+                <button id="download-cert-btn" onclick="downloadCertificate()" class="clay-btn w-full bg-aiBlue text-white border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2 mb-4">
+                    Muat Turun Sijil
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+
+                <button onclick="resetGame()" class="clay-btn w-full bg-aiYellow text-aiDarkYellow border-none py-4 px-6 rounded-xl font-bold text-xl shadow-clay flex items-center justify-center gap-2">
+                    Main Lagi
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+
+        </div>
+        
+        <!-- Footer note -->
+        <p class="text-center text-aiBlue text-sm font-bold mt-6">📌 Rujuk profile bio untuk lebih info</p>
+    </div>
+
+    <script>
+        // --- 1. Question Data ---
+        const questions = [
+            {
+                topic: "Maksud prompt",
+                question: "Apakah yang dimaksudkan dengan 'Prompt' dalam dunia AI?",
+                options: [
+                    "A) Perisian untuk melukis secara digital",
+                    "B) Arahan atau teks yang diberikan kepada AI",
+                    "C) Jenama komputer riba terbaru",
+                    "D) Kod rahsia pengaturcaraan"
+                ],
+                answerIndex: 1, // B
+                explanation: "Prompt ialah arahan atau soalan yang kita taip untuk beritahu AI apa yang kita mahu ia lakukan."
+            },
+            {
+                topic: "Cara menulis prompt yang jelas",
+                question: "Antara berikut, manakah contoh prompt yang PALING JELAS untuk AI?",
+                options: [
+                    "A) 'Tulis sikit pasal biskut.'",
+                    "B) 'Bantu saya.'",
+                    "C) 'Tuliskan caption Instagram 50 patah perkataan untuk mempromosikan biskut coklat.'",
+                    "D) 'Biskut sedap.'"
+                ],
+                answerIndex: 2, // C
+                explanation: "Prompt yang baik perlu spesifik (ada platform, had perkataan, dan topik yang jelas) supaya AI faham kehendak anda."
+            },
+            {
+                topic: "Fungsi ChatGPT",
+                question: "Apakah fungsi utama ChatGPT?",
+                options: [
+                    "A) Menghasilkan video panjang dari teks",
+                    "B) Menjana teks seperti menulis e-mel, idea, dan artikel",
+                    "C) Mencetak gambar secara fizikal 3D",
+                    "D) Menggodam akaun media sosial"
+                ],
+                answerIndex: 1, // B
+                explanation: "ChatGPT adalah model bahasa AI yang pakar dalam memahami dan menghasilkan teks seperti manusia."
+            },
+            {
+                topic: "Fungsi Gemini",
+                question: "Gemini adalah model AI yang dibangunkan oleh syarikat mana?",
+                options: [
+                    "A) Microsoft",
+                    "B) Apple",
+                    "C) OpenAI",
+                    "D) Google"
+                ],
+                answerIndex: 3, // D
+                explanation: "Gemini ialah AI berkuasa tinggi yang dibangunkan oleh Google, mampu memproses teks, kod, dan gambar."
+            },
+            {
+                topic: "Cara menghasilkan gambar AI",
+                question: "Alat AI manakah yang biasa digunakan untuk MENGHASILKAN GAMBAR dari teks?",
+                options: [
+                    "A) Midjourney",
+                    "B) Microsoft Excel",
+                    "C) Spotify",
+                    "D) Google Maps"
+                ],
+                answerIndex: 0, // A
+                explanation: "Midjourney (dan juga DALL-E) adalah penjana imej AI popular yang mengubah deskripsi teks kepada gambar visual."
+            },
+            {
+                topic: "Cara menghasilkan video AI",
+                question: "Pilih cara yang betul untuk menggunakan AI dalam penghasilan video:",
+                options: [
+                    "A) Meminta AI merakam video anda mandi",
+                    "B) Menggunakan AI (seperti Sora atau Runway) untuk menukar skrip teks kepada babak video",
+                    "C) Mengarahkan AI membeli kamera mahal di kedai",
+                    "D) AI tidak boleh digunakan langsung untuk video"
+                ],
+                answerIndex: 1, // B
+                explanation: "AI generatif video seperti Runway atau Sora boleh mencipta visual video pendek berdasarkan arahan teks anda."
+            },
+            {
+                topic: "Kegunaan Canva dan CapCut",
+                question: "Walaupun Canva dan CapCut adalah alat edit biasa, kedua-duanya kini mempunyai ciri AI. Apakah contoh ciri AI tersebut?",
+                options: [
+                    "A) Menghidupkan enjin kereta",
+                    "B) Magic Eraser (buang objek) atau Auto-Captions (sari kata automatik)",
+                    "C) Menghantar makanan ke rumah",
+                    "D) Memasak resipi baru"
+                ],
+                answerIndex: 1, // B
+                explanation: "Canva ada 'Magic Studio' untuk edit gambar mudah, manakala CapCut ada 'Auto-Captions' untuk hasilkan sari kata video secara automatik."
+            },
+            {
+                topic: "Penggunaan AI untuk content",
+                question: "Bagaimanakah AI patut digunakan oleh Content Creator (Pencipta Kandungan)?",
+                options: [
+                    "A) Salin 100% dari AI tanpa edit",
+                    "B) Sebagai pembantu mencari idea, merangka struktur, dan semak ejaan",
+                    "C) Biarkan AI buat semua kerja dan kita tidur",
+                    "D) Jangan guna AI langsung sebab menipu"
+                ],
+                answerIndex: 1, // B
+                explanation: "AI terbaik digunakan sebagai 'Co-pilot' atau pembantu. Anda masih perlu masukkan sentuhan peribadi dan gaya bahasa anda sendiri."
+            },
+            {
+                topic: "Semakan fakta",
+                question: "Jika AI memberikan fakta atau statistik untuk artikel anda, apakah tindakan terbaik?",
+                options: [
+                    "A) Terus percaya kerana AI sangat pandai",
+                    "B) Padam fakta tersebut kerana semua AI penipu",
+                    "C) Semak semula fakta tersebut di Google atau sumber rasmi",
+                    "D) Tukar nombor statistik itu sesuka hati"
+                ],
+                answerIndex: 2, // C
+                explanation: "AI kadang-kala mengalami 'Hallucination' (reka fakta). Penting untuk sentiasa semak silang fakta dengan sumber sahih."
+            },
+            {
+                topic: "Etika dan keselamatan menggunakan AI",
+                question: "Maklumat apakah yang TIDAK PATUT anda berikan kepada AI awam seperti ChatGPT?",
+                options: [
+                    "A) Resipi nasi lemak",
+                    "B) Kata laluan bank dan maklumat sulit pelanggan",
+                    "C) Idea tajuk untuk video TikTok",
+                    "D) Skrip lakonan"
+                ],
+                answerIndex: 1, // B
+                explanation: "Jangan kongsi maklumat peribadi, kewangan atau rahsia syarikat di AI awam kerana data tersebut mungkin digunakan untuk melatih sistem mereka."
             }
-        }
-    }
+        ];
 
-    // --- Local Storage ---
-    function loadData() {
-        const hs = localStorage.getItem('pti_highscore') || 0;
-        displays.highScore.innerText = hs;
-        
-        const lastChar = localStorage.getItem('pti_char') || 'wanita';
-        selectCharacter(lastChar);
-        
-        const soundPref = localStorage.getItem('pti_sound');
-        if(soundPref === 'off') toggleSound(false);
-    }
+        // --- 2. State Variables ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playerName = "";
+        let hasAnsweredCurrent = false;
 
-    function saveData() {
-        const currentHS = parseInt(localStorage.getItem('pti_highscore') || 0);
-        if (gameState.score > currentHS) {
-            localStorage.setItem('pti_highscore', gameState.score);
-            localStorage.setItem('pti_hs_name', gameState.playerName);
-        }
-    }
-
-    // --- Menu Interactions ---
-    document.querySelectorAll('.char-select-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const char = e.currentTarget.dataset.char;
-            selectCharacter(char);
-        });
-    });
-
-    function selectCharacter(char) {
-        document.querySelectorAll('.char-select-btn').forEach(b => b.classList.remove('selected'));
-        const activeBtn = document.querySelector(`.char-select-btn[data-char="${char}"]`);
-        if(activeBtn) activeBtn.classList.add('selected');
-        
-        gameState.character = char;
-        localStorage.setItem('pti_char', char);
-        
-        // Update player sprite image with fallback logic
-        const imgPath = char === 'wanita' ? femaleCharacterImage : maleCharacterImage;
-        const fallbackEmoji = char === 'wanita' ? '🧕' : '👨‍💼';
-        
-        const img = new Image();
-        img.onload = function() {
-            // Gambar berjaya dimuatkan
-            playerEl.style.backgroundImage = `url('${imgPath}')`;
-            playerEl.innerHTML = '';
-            playerEl.style.backgroundColor = 'transparent';
-            
-            document.getElementById('win-sprite').style.backgroundImage = `url('${imgPath}')`;
-            document.getElementById('win-sprite').innerHTML = '';
-            document.getElementById('win-sprite').style.backgroundColor = 'transparent';
-            
-            if(activeBtn) {
-                activeBtn.querySelector('.sprite-preview').style.backgroundImage = `url('${imgPath}')`;
-                activeBtn.querySelector('.sprite-preview').innerHTML = '';
-            }
+        // --- 3. DOM Elements ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            game: document.getElementById('game-screen'),
+            result: document.getElementById('result-screen')
         };
-        img.onerror = function() {
-            // Gambar gagal dimuatkan, guna emoji ganti (fallback)
-            playerEl.style.backgroundImage = 'none';
-            playerEl.style.backgroundColor = char === 'wanita' ? '#fef08a' : '#bfdbfe'; // Kuning atau Biru
-            playerEl.style.borderRadius = '50px 50px 10px 10px';
-            playerEl.style.display = 'flex';
-            playerEl.style.alignItems = 'center';
-            playerEl.style.justifyContent = 'center';
-            playerEl.style.fontSize = '5rem';
-            playerEl.innerHTML = fallbackEmoji;
-            
-            document.getElementById('win-sprite').style.backgroundImage = 'none';
-            document.getElementById('win-sprite').style.backgroundColor = char === 'wanita' ? '#fef08a' : '#bfdbfe';
-            document.getElementById('win-sprite').style.borderRadius = '50px 50px 10px 10px';
-            document.getElementById('win-sprite').style.display = 'flex';
-            document.getElementById('win-sprite').style.alignItems = 'center';
-            document.getElementById('win-sprite').style.justifyContent = 'center';
-            document.getElementById('win-sprite').style.fontSize = '5rem';
-            document.getElementById('win-sprite').innerHTML = fallbackEmoji;
-            
-            if(activeBtn) {
-                activeBtn.querySelector('.sprite-preview').style.backgroundImage = 'none';
-                activeBtn.querySelector('.sprite-preview').style.backgroundColor = char === 'wanita' ? '#fef08a' : '#bfdbfe';
-                activeBtn.querySelector('.sprite-preview').style.borderRadius = '20px 20px 5px 5px';
-                activeBtn.querySelector('.sprite-preview').innerHTML = fallbackEmoji;
-            }
+        
+        const ui = {
+            nameInput: document.getElementById('playerName'),
+            nameError: document.getElementById('nameError'),
+            qNum: document.getElementById('question-number'),
+            score: document.getElementById('score-display'),
+            progBar: document.getElementById('progress-bar'),
+            qText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            feedbackArea: document.getElementById('feedback-area'),
+            feedbackTitle: document.getElementById('feedback-title'),
+            feedbackText: document.getElementById('feedback-text'),
+            nextBtn: document.getElementById('next-btn'),
+            resName: document.getElementById('result-name'),
+            motvMsg: document.getElementById('motivation-msg'),
+            certName: document.getElementById('cert-name'),
+            certScore: document.getElementById('cert-score'),
+            certLevel: document.getElementById('cert-level'),
+            certDate: document.getElementById('cert-date'),
+            downloadBtn: document.getElementById('download-cert-btn')
         };
-        img.src = imgPath;
-    }
 
-    function toggleSound(forceState = null) {
-        if(forceState !== null) {
-            soundEnabled = forceState;
-        } else {
-            soundEnabled = !soundEnabled;
-        }
-        localStorage.setItem('pti_sound', soundEnabled ? 'on' : 'off');
-        const icon = document.querySelector('#toggle-sound-menu i');
-        if(soundEnabled) {
-            icon.className = 'fas fa-volume-up';
-        } else {
-            icon.className = 'fas fa-volume-mute text-red-500';
-        }
-    }
-    
-    document.getElementById('toggle-sound-menu').addEventListener('click', () => toggleSound());
+        // --- 4. Game Functions ---
 
-    // --- Core Game Functions ---
-    
-    function startGame() {
-        initAudio();
-        const nameInput = document.getElementById('player-name-input').value.trim();
-        gameState.playerName = nameInput || 'Peniaga Hebat';
-        
-        // Reset State
-        gameState.score = 0;
-        gameState.lives = 3;
-        gameState.level = 1;
-        gameState.objectsCaught = 0;
-        gameState.isRunning = true;
-        playerPos.x = 50;
-        updatePlayerPosition();
-        
-        // Update UI
-        displays.name.innerText = gameState.playerName;
-        updateScoreUI();
-        updateLivesUI();
-        updateLevelUI();
-        
-        // Hide/Show Screens
-        hideAllScreens();
-        screens.ui.classList.remove('hidden');
-        playerEl.classList.remove('hidden');
-        document.getElementById('mobile-controls').classList.remove('hidden');
-        
-        // Set initial background
-        container.style.background = LEVELS[1].bg;
-        
-        // Start loops
-        startSpawning();
-        gameLoopRef = requestAnimationFrame(gameLoop);
-    }
-
-    function updateScoreUI() {
-        displays.score.innerText = gameState.score;
-        // Check level progression
-        checkLevelProgression();
-    }
-
-    function updateLivesUI() {
-        displays.lives.innerHTML = '';
-        for(let i=0; i<3; i++) {
-            if(i < gameState.lives) {
-                displays.lives.innerHTML += '<i class="fas fa-heart"></i> ';
-            } else {
-                displays.lives.innerHTML += '<i class="far fa-heart text-gray-400"></i> ';
-            }
-        }
-        if(gameState.lives <= 0) {
-            gameOver();
-        }
-    }
-
-    function updateLevelUI() {
-        displays.level.innerText = gameState.level;
-    }
-
-    // --- Player Movement ---
-    function movePlayer(dir) {
-        if(!gameState.isRunning || gameState.isPaused) return;
-        const step = 2;
-        if(dir === 'left' && playerPos.x > 10) playerPos.x -= step;
-        if(dir === 'right' && playerPos.x < 90) playerPos.x += step;
-        updatePlayerPosition();
-    }
-
-    function updatePlayerPosition() {
-        playerEl.style.left = `${playerPos.x}%`;
-    }
-
-    // Keyboard controls
-    const keys = {};
-    window.addEventListener('keydown', (e) => {
-        keys[e.key] = true;
-        if(e.key === 'ArrowLeft' || e.key === 'a') movePlayer('left');
-        if(e.key === 'ArrowRight' || e.key === 'd') movePlayer('right');
-    });
-    window.addEventListener('keyup', (e) => { keys[e.key] = false; });
-    
-    // Continuous movement loop for keyboard
-    setInterval(() => {
-        if(keys['ArrowLeft'] || keys['a']) movePlayer('left');
-        if(keys['ArrowRight'] || keys['d']) movePlayer('right');
-    }, 20);
-
-    // Mobile controls (Touch)
-    const btnLeft = document.getElementById('btn-left');
-    const btnRight = document.getElementById('btn-right');
-    
-    const handleTouch = (dir) => {
-        clearInterval(moveInterval);
-        moveInterval = setInterval(() => movePlayer(dir), 20);
-    };
-    const stopTouch = () => clearInterval(moveInterval);
-
-    btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('left'); });
-    btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); stopTouch(); });
-    btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('right'); });
-    btnRight.addEventListener('touchend', (e) => { e.preventDefault(); stopTouch(); });
-    // Mouse fallback for testing on desktop
-    btnLeft.addEventListener('mousedown', () => handleTouch('left'));
-    btnLeft.addEventListener('mouseup', stopTouch);
-    btnLeft.addEventListener('mouseleave', stopTouch);
-    btnRight.addEventListener('mousedown', () => handleTouch('right'));
-    btnRight.addEventListener('mouseup', stopTouch);
-    btnRight.addEventListener('mouseleave', stopTouch);
-
-
-    // --- Object Spawning & Physics ---
-    
-    function startSpawning() {
-        clearInterval(spawnInterval);
-        const rate = LEVELS[gameState.level].spawnRate;
-        spawnInterval = setInterval(createObject, rate);
-    }
-
-    function createObject() {
-        if(!gameState.isRunning || gameState.isPaused) return;
-
-        const isGangguan = Math.random() < (gameState.level * 0.15); // Increases with level
-        const isBonus = !isGangguan && Math.random() < 0.1;
-        
-        let data;
-        if(isGangguan) {
-            data = gangguanObjects[Math.floor(Math.random() * gangguanObjects.length)];
-            data.type = 'gangguan';
-        } else if(isBonus && gameState.level > 1) {
-             // Bonus only in level 2+
-            const bonuses = ilmuObjects.filter(o => o.type === 'bonus');
-            data = bonuses[Math.floor(Math.random() * bonuses.length)];
-        } else {
-            const normals = ilmuObjects.filter(o => o.type === 'normal');
-            data = normals[Math.floor(Math.random() * normals.length)];
-        }
-
-        const el = document.createElement('div');
-        el.className = `falling-object ${data.type === 'gangguan' ? 'gangguan' : ''}`;
-        el.innerHTML = `<i class="fas ${data.icon}"></i>`;
-        el.style.color = data.color;
-        
-        // Random X position (10% to 90%)
-        const startX = 10 + Math.random() * 80;
-        el.style.left = `${startX}%`;
-        el.style.top = `-50px`;
-
-        container.appendChild(el);
-        fallingElements.push({
-            el: el,
-            y: -50,
-            data: data
-        });
-    }
-
-    function gameLoop() {
-        if(!gameState.isRunning) return;
-        if(!gameState.isPaused) {
-            updateObjects();
-        }
-        gameLoopRef = requestAnimationFrame(gameLoop);
-    }
-
-    function updateObjects() {
-        const speed = LEVELS[gameState.level].speed;
-        const playerRect = playerEl.getBoundingClientRect();
-        
-        for (let i = fallingElements.length - 1; i >= 0; i--) {
-            let obj = fallingElements[i];
-            obj.y += speed;
-            obj.el.style.top = `${obj.y}px`;
-
-            // Check collision
-            const objRect = obj.el.getBoundingClientRect();
-            
-            if (isColliding(playerRect, objRect)) {
-                handleCollision(obj.data, objRect);
-                obj.el.remove();
-                fallingElements.splice(i, 1);
-            } 
-            // Remove if off screen
-            else if (obj.y > window.innerHeight) {
-                obj.el.remove();
-                fallingElements.splice(i, 1);
-            }
-        }
-    }
-
-    // Simplified AABB collision
-    function isColliding(rect1, rect2) {
-        // Add some padding to make it forgiving, especially for character head
-        const paddingX = 15; 
-        const paddingY = 20;
-        return !(
-            rect1.right - paddingX < rect2.left || 
-            rect1.left + paddingX > rect2.right || 
-            rect1.bottom - paddingY < rect2.top || 
-            rect1.top + paddingY > rect2.bottom
-        );
-    }
-
-    function handleCollision(data, rect) {
-        if(data.type === 'gangguan') {
-            // Hit by obstacle
-            playSound('hit');
-            gameState.lives--;
-            updateLivesUI();
-            
-            // Visual feedback
-            playerEl.classList.add('player-hit');
-            setTimeout(() => playerEl.classList.remove('player-hit'), 500);
-            
-            // Show floating text
-            showFloatingText("-1 Nyawa", rect.left, rect.top, 'red');
-            
-            // Flash screen
-            container.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
-            setTimeout(() => container.style.backgroundColor = '', 200);
-            
-            // Show random quote toast
-            const quote = hitQuotes[Math.floor(Math.random() * hitQuotes.length)];
-            showToast(quote, 'red');
-
-        } else {
-            // Caught object
-            playSound(data.type === 'bonus' ? 'bonus' : 'catch');
-            gameState.score += data.score || 10;
-            gameState.objectsCaught++;
-            updateScoreUI();
-            
-            // Visual feedback
-            playerEl.classList.add('player-catch');
-            setTimeout(() => playerEl.classList.remove('player-catch'), 200);
-            
-            showFloatingText(`+${data.score || 10}`, rect.left, rect.top, '#2563eb');
-            
-            // Show tip occasionally (every 5 catches)
-            if(gameState.objectsCaught % 5 === 0) {
-                const tip = tipsData[Math.floor(Math.random() * tipsData.length)];
-                showToast(tip, '#2563eb');
-            }
-        }
-    }
-
-    function showFloatingText(text, x, y, color) {
-        const el = document.createElement('div');
-        el.className = 'floating-text';
-        el.innerText = text;
-        el.style.left = `${x}px`;
-        el.style.top = `${y - 20}px`;
-        if(color) el.style.color = color;
-        container.appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-    }
-
-    function showToast(text, bgColor = 'var(--primary-blue)') {
-        const toast = document.getElementById('tip-toast');
-        toast.innerText = text;
-        toast.style.backgroundColor = bgColor;
-        toast.style.opacity = '1';
-        // Panjangkan masa ke 5 saat supaya sempat baca istilah
-        setTimeout(() => toast.style.opacity = '0', 5000);
-    }
-
-    function checkLevelProgression() {
-        if(gameState.level === 1 && gameState.score >= LEVELS[1].target) {
-            triggerQuiz(1);
-        } else if(gameState.level === 2 && gameState.score >= LEVELS[2].target) {
-            triggerQuiz(2);
-        } else if(gameState.level === 3 && gameState.score >= LEVELS[3].target) {
-            gameWin();
-        }
-    }
-
-    let currentQuizIndex = 0;
-    function triggerQuiz(fromLevel) {
-        gameState.isPaused = true;
-        
-        // Pick random question
-        currentQuizIndex = Math.floor(Math.random() * quizData.length);
-        const qData = quizData[currentQuizIndex];
-        
-        document.getElementById('quiz-question').innerText = qData.q;
-        const optionsContainer = document.getElementById('quiz-options');
-        optionsContainer.innerHTML = '';
-        
-        // Shuffle options for display but remember correct answer
-        let optionsWithIndex = qData.options.map((opt, i) => ({text: opt, originalIndex: i}));
-        optionsWithIndex.sort(() => Math.random() - 0.5);
-
-        optionsWithIndex.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg text-sm transition';
-            btn.innerText = opt.text;
-            btn.onclick = () => handleQuizAnswer(opt.originalIndex === qData.a, qData);
-            optionsContainer.appendChild(btn);
-        });
-
-        document.getElementById('quiz-result').classList.add('hidden');
-        optionsContainer.classList.remove('hidden');
-        screens.quiz.classList.remove('hidden');
-    }
-
-    function handleQuizAnswer(isCorrect, qData) {
-        document.getElementById('quiz-options').classList.add('hidden');
-        const resultDiv = document.getElementById('quiz-result');
-        const feedback = document.getElementById('quiz-feedback');
-        const explanation = document.getElementById('quiz-explanation');
-        
-        resultDiv.classList.remove('hidden');
-        
-        if(isCorrect) {
-            playSound('correct');
-            feedback.innerText = "Tahniah! Jawapan Tepat!";
-            feedback.className = "font-bold text-lg mb-2 text-green-600";
-            gameState.score += 50; // Bonus
-            updateScoreUI();
-        } else {
-            playSound('hit');
-            feedback.innerText = "Kurang Tepat.";
-            feedback.className = "font-bold text-lg mb-2 text-red-600";
-        }
-        
-        explanation.innerText = `Jawapan: ${qData.options[qData.a]}\n\n${qData.exp}`;
-    }
-
-    document.getElementById('quiz-continue-btn').addEventListener('click', () => {
-        screens.quiz.classList.add('hidden');
-        
-        // Progress Level
-        gameState.level++;
-        updateLevelUI();
-        container.style.background = LEVELS[gameState.level].bg;
-        
-        // Clean up screen
-        fallingElements.forEach(obj => obj.el.remove());
-        fallingElements = [];
-        
-        // Resume
-        gameState.isPaused = false;
-        startSpawning();
-    });
-
-    
-    // Function to handle API requests with exponential backoff for rate limits
-    async function fetchWithRetry(url, options, maxRetries = 3) {
-        for (let i = 0; i < maxRetries; i++) {
+        // Try to load name from local storage on init
+        window.onload = () => {
             try {
-                const response = await fetch(url, options);
-                if (!response.ok && response.status === 429) {
-                    throw new Error("Throttled");
+                const savedName = localStorage.getItem('belajarSekejapAIName');
+                if(savedName) {
+                    ui.nameInput.value = savedName;
                 }
-                return response;
-            } catch (error) {
-                if (i === maxRetries - 1) throw error;
-                await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000)); // wait 1s, 2s, 4s...
+            } catch (e) {
+                console.warn("Local storage tidak tersedia.", e);
             }
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
         }
-    }
 
-    // Function to call Gemini LLM and get customized business advice
-    async function fetchAIAdvice(score, isWin, level) {
-        const adviceEl = document.getElementById(isWin ? 'win-ai-advice' : 'go-ai-advice');
-        if(adviceEl) adviceEl.innerHTML = '<i class="fas fa-spinner fa-spin text-blue-500"></i> <span class="ml-1 text-gray-600">AI sedang memikirkan nasihat untuk anda...</span>';
+        function startGame() {
+            playerName = ui.nameInput.value.trim();
+            if (playerName === "") {
+                ui.nameError.classList.remove('hidden');
+                ui.nameInput.focus();
+                return;
+            }
+            
+            // Save name to localStorage safely
+            try {
+                localStorage.setItem('belajarSekejapAIName', playerName);
+            } catch (e) {
+                console.warn("Gagal menyimpan ke local storage.", e);
+            }
+            
+            ui.nameError.classList.add('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScoreDisplay();
+            loadQuestion();
+            showScreen('game');
+        }
 
-        const prompt = `Bertindak sebagai pakar perniagaan digital dan AI yang kelakar dan mesra dari Malaysia.
-Pemain bernama ${gameState.playerName} baru sahaja mendapat markah ${score} dalam permainan "Peniaga Tangkap Ilmu" (sebuah game bisnes & pemasaran).
-${isWin ? 'Pemain ini MENANG game ini dengan cemerlang!' : 'Pemain ini KALAH pada Tahap ' + level + ' kerana terkena banyak halangan bisnes.'}
-Tugasan: Berikan 1 ayat pendek (maksimum 20 perkataan) yang mengandungi ucapan berdasarkan situasi mereka dan satu nasihat bisnes memotivasikan dalam Bahasa Malaysia yang santai (gaya sembang/casual). Jangan gunakan sebarang format markdown (seperti asterisk atau bold) atau petikan (quotes).`;
+        function loadQuestion() {
+            hasAnsweredCurrent = false;
+            const q = questions[currentQuestionIndex];
+            
+            // Update UI Counters
+            ui.qNum.innerText = currentQuestionIndex + 1;
+            ui.progBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            
+            // Set Question Text
+            ui.qText.innerText = q.question;
+            
+            // Clear previous options and feedback
+            ui.optionsContainer.innerHTML = '';
+            ui.feedbackArea.classList.remove('show', 'bg-green-100', 'bg-red-100', 'text-green-800', 'text-red-800');
+            ui.nextBtn.classList.add('hidden');
 
-        try {
-            const apiKey = ""; // Canvas handles API Key automatically
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }]
-            };
-
-            const response = await fetchWithRetry(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            // Render Options
+            q.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(index, btn);
+                ui.optionsContainer.appendChild(btn);
             });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (hasAnsweredCurrent) return; // Prevent multiple clicks
+            hasAnsweredCurrent = true;
+
+            const q = questions[currentQuestionIndex];
+            const isCorrect = (selectedIndex === q.answerIndex);
             
-            const result = await response.json();
-            const candidate = result.candidates?.[0];
-            
-            if (candidate && candidate.content?.parts?.[0]?.text) {
-                let adviceText = candidate.content.parts[0].text.replace(/"/g, '').trim();
-                if(adviceEl) adviceEl.innerHTML = `"${adviceText}"`;
+            // Disable all buttons
+            const allBtns = ui.optionsContainer.querySelectorAll('button');
+            allBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.answerIndex) {
+                    btn.classList.add('correct'); // Highlight correct answer always
+                }
+            });
+
+            // Handle Selection Result
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                score += 10;
+                updateScoreDisplay();
+                showFeedback(true, q.explanation);
+                fireConfetti();
             } else {
-                if(adviceEl) adviceEl.innerHTML = '"Terus konsisten belajar dan berniaga, kejayaan pasti menyusul nanti!"';
+                selectedBtn.classList.add('wrong');
+                showFeedback(false, q.explanation);
             }
-        } catch (error) {
-            if(adviceEl) adviceEl.innerHTML = '"Gagal menyambung ke server AI. Teruskan usaha perniagaan anda dengan gigih!"';
+
+            // Show Next button
+            ui.nextBtn.classList.remove('hidden');
+
+            // Scroll ke bawah sedikit untuk telefon supaya butang Next jelas kelihatan
+            setTimeout(() => {
+                ui.nextBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
         }
-    }
 
-    function gameOver() {
-        gameState.isRunning = false;
-        saveData();
-        saveGlobalScore();
-        
-        // Generate personalized AI advice
-        fetchAIAdvice(gameState.score, false, gameState.level);
-        
-        // Populate Game Over Screen
-        document.getElementById('go-name').innerText = gameState.playerName;
-        document.getElementById('go-score').innerText = gameState.score;
-        document.getElementById('go-level').innerText = gameState.level;
-        document.getElementById('go-high').innerText = localStorage.getItem('pti_highscore') || 0;
-        
-        hideAllScreens();
-        screens.gameover.classList.remove('hidden');
-    }
+        function updateScoreDisplay() {
+            ui.score.innerText = score;
+        }
 
-    function gameWin() {
-        gameState.isRunning = false;
-        playSound('win');
-        saveData();
-        saveGlobalScore();
-        
-        // Generate personalized AI advice
-        fetchAIAdvice(gameState.score, true, gameState.level);
-        
-        // Populate Win Screen
-        document.getElementById('cert-name').innerText = gameState.playerName.toUpperCase();
-        
-        // Create Confetti
-        createConfetti();
-        
-        hideAllScreens();
-        screens.win.classList.remove('hidden');
-    }
+        function showFeedback(isCorrect, explanation) {
+            ui.feedbackArea.classList.add('show');
+            if (isCorrect) {
+                ui.feedbackArea.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-300');
+                ui.feedbackArea.classList.remove('bg-red-100', 'text-red-800', 'border-red-300');
+                ui.feedbackTitle.innerText = "✨ Jawapan Betul!";
+            } else {
+                ui.feedbackArea.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-300');
+                ui.feedbackArea.classList.remove('bg-green-100', 'text-green-800', 'border-green-300');
+                ui.feedbackTitle.innerText = "❌ Jawapan Salah.";
+            }
+            ui.feedbackText.innerText = explanation;
+        }
 
-    function createConfetti() {
-        const confContainer = document.getElementById('confetti-container');
-        confContainer.innerHTML = '';
-        const colors = ['#fef08a', '#60a5fa', '#34d399', '#f87171'];
-        for(let i=0; i<50; i++) {
-            const conf = document.createElement('div');
-            conf.style.position = 'absolute';
-            conf.style.width = '10px';
-            conf.style.height = '10px';
-            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            conf.style.left = Math.random() * 100 + '%';
-            conf.style.top = '-10px';
-            conf.style.opacity = Math.random();
-            conf.style.transform = `rotate(${Math.random()*360}deg)`;
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            showScreen('result');
+            ui.resName.innerText = playerName;
             
-            const animDuration = 2 + Math.random() * 3;
-            conf.style.animation = `fall ${animDuration}s linear forwards`;
+            // Set Certificate Data
+            ui.certName.innerText = playerName;
+            ui.certScore.innerText = score;
             
-            confContainer.appendChild(conf);
+            // Generate Current Date in BM
+            const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+            const today = new Date();
+            ui.certDate.innerText = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+            
+            // Determine Level
+            let level = "";
+            let motiv = "";
+            let levelStyle = "";
+
+            if (score <= 30) {
+                level = "Baru Bermula 🌱";
+                motiv = "Permulaan yang baik! Teruskan belajar tentang AI sikit demi sikit.";
+                levelStyle = "text-gray-600 bg-gray-100 border-gray-300";
+            } else if (score <= 60) {
+                level = "Sedang Belajar 📚";
+                motiv = "Asas dah ada! Anda dalam landasan yang betul untuk kuasai AI.";
+                levelStyle = "text-blue-700 bg-blue-100 border-blue-300";
+            } else if (score <= 80) {
+                level = "Bijak Guna AI 💡";
+                motiv = "Hebat! Anda sudah faham cara gunakan AI dengan selamat dan berkesan.";
+                levelStyle = "text-green-700 bg-green-100 border-green-300";
+            } else {
+                level = "Juara AI 👑";
+                motiv = "Luar biasa! Anda memang pakar. Jangan lupa kongsi ilmu ini!";
+                levelStyle = "text-yellow-700 bg-yellow-100 border-yellow-400";
+                setTimeout(fireBigConfetti, 500);
+            }
+
+            ui.certLevel.innerText = level;
+            ui.certLevel.className = `text-sm font-bold uppercase tracking-widest inline-block px-4 py-1.5 rounded-full border mb-4 ${levelStyle}`;
+            ui.motvMsg.innerText = motiv;
         }
-    }
-    
-    // Add CSS for confetti falling
-    const styleSheet = document.createElement("style");
-    styleSheet.innerText = `
-        @keyframes fall {
-            to { transform: translateY(100vh) rotate(720deg); }
+
+        function resetGame() {
+            showScreen('start');
         }
-    `;
-    document.head.appendChild(styleSheet);
 
+        function fireConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#1E40AF', '#FBBF24', '#ffffff']
+                });
+            }
+        }
 
-    // --- Utility / Navigation ---
-    function hideAllScreens() {
-        Object.values(screens).forEach(s => s.classList.add('hidden'));
-        playerEl.classList.add('hidden');
-        document.getElementById('mobile-controls').classList.add('hidden');
-    }
+        function fireBigConfetti() {
+             if (typeof confetti === 'function') {
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
 
-    // Button Listeners
-    document.getElementById('start-btn').addEventListener('click', startGame);
-    
-    document.getElementById('how-to-btn').addEventListener('click', () => {
-        screens.howto.classList.remove('hidden');
-    });
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
 
-    document.getElementById('leaderboard-btn').addEventListener('click', () => {
-        screens.leaderboard.classList.remove('hidden');
-    });
-    
-    document.getElementById('close-leaderboard').addEventListener('click', () => {
-        screens.leaderboard.classList.add('hidden');
-    });
-    
-    document.getElementById('close-how-to').addEventListener('click', () => {
-        screens.howto.classList.add('hidden');
-    });
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
 
-    document.getElementById('retry-btn').addEventListener('click', startGame);
-    
-    document.getElementById('home-btn').addEventListener('click', () => {
-        hideAllScreens();
-        loadData(); // refresh high score
-        screens.main.classList.remove('hidden');
-    });
+                  if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                  }
 
-    document.getElementById('win-play-again').addEventListener('click', startGame);
-    
-    document.getElementById('win-home').addEventListener('click', () => {
-        hideAllScreens();
-        loadData();
-        screens.main.classList.remove('hidden');
-    });
+                  var particleCount = 50 * (timeLeft / duration);
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                  }));
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                  }));
+                }, 250);
+            }
+        }
 
-    // Initialize on load
-    window.onload = () => {
-        loadData();
-        initFirebase();
-    };
+        // --- 5. Download Certificate Logic ---
+        function downloadCertificate() {
+            const certNode = document.getElementById('certificate-node');
+            const btn = ui.downloadBtn;
+            
+            // Simpan teks asal butang dan tunjuk status loading
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `
+                Sedang Jana...
+                <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            `;
+            btn.disabled = true;
 
-</script>
+            html2canvas(certNode, {
+                scale: 3, // Skala besar untuk kualiti imej yang tinggi
+                backgroundColor: '#ffffff', // Pastikan background putih pejal
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                // Hasilkan pautan muat turun (Data URL)
+                const link = document.createElement('a');
+                // Buang ruang kosong pada nama untuk nama fail yang kemas
+                const safeName = playerName.replace(/\s+/g, '_'); 
+                link.download = `Sijil_SekejapAI_${safeName}.png`;
+                link.href = canvas.toDataURL('image/png');
+                
+                // Automatik klik untuk mula muat turun
+                link.click();
+                
+                // Kembalikan butang kepada keadaan asal
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }).catch(error => {
+                console.error('Ralat ketika menjana sijil:', error);
+                alert('Maaf, pendaftaran gagal dijana. Sila cuba lagi.');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        }
+    </script>
 </body>
 </html>
