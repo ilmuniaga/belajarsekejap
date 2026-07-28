@@ -61,7 +61,7 @@
 
         #player {
             position: absolute;
-            bottom: calc(90px + env(safe-area-inset-bottom, 0px)); /* Space for mobile controls + iOS safe area */
+            bottom: calc(180px + env(safe-area-inset-bottom, 0px)); /* Ditolak jauh lebih tinggi dari menu Safari */
             left: 50%;
             transform: translateX(-50%);
             width: 100px;
@@ -159,7 +159,7 @@
 
         #mobile-controls {
             position: absolute;
-            bottom: calc(20px + env(safe-area-inset-bottom, 0px)); /* Push above iOS home bar */
+            bottom: calc(90px + env(safe-area-inset-bottom, 0px)); /* Ditolak tinggi melepasi bar bawah Safari */
             left: 0;
             width: 100%;
             display: flex;
