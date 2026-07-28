@@ -304,7 +304,8 @@
         </div>
 
         <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 mb-3 w-3/4 max-w-xs">Mula Game</button>
-        <button id="how-to-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-6 rounded-full shadow mb-4 w-3/4 max-w-xs text-sm">Cara Bermain</button>
+        <button id="how-to-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-6 rounded-full shadow mb-2 w-3/4 max-w-xs text-sm">Cara Bermain</button>
+        <button id="leaderboard-btn" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-6 rounded-full shadow mb-4 w-3/4 max-w-xs text-sm"><i class="fas fa-globe"></i> Carta Juara Global</button>
         
         <div class="text-sm font-semibold text-gray-500 mb-4">
             Markah Tertinggi: <span id="high-score-display" class="text-blue-600">0</span>
@@ -439,9 +440,28 @@
         </div>
     </div>
     
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen hidden bg-blue-50">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-11/12 max-w-sm text-center flex flex-col max-h-[85vh]">
+            <h2 class="text-xl font-bold text-blue-600 mb-4"><i class="fas fa-trophy text-yellow-400"></i> Carta Juara Global</h2>
+            <div class="flex justify-between border-b pb-2 mb-2 text-xs font-bold text-gray-500 px-2">
+                <span>Pemain</span>
+                <span>Markah</span>
+            </div>
+            <div id="leaderboard-list" class="overflow-y-auto flex-1 mb-4 flex flex-col gap-2 text-left min-h-[200px]">
+                <p class="text-sm text-gray-500 text-center py-4">Memuatkan data...</p>
+            </div>
+            <button id="close-leaderboard" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+    
 </div>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
     /**
      * PENIAGA TANGKAP ILMU - MAIN GAME SCRIPT
      */
@@ -588,7 +608,8 @@
         ui: document.getElementById('ui-layer'),
         quiz: document.getElementById('quiz-screen'),
         gameover: document.getElementById('game-over-screen'),
-        win: document.getElementById('win-screen')
+        win: document.getElementById('win-screen'),
+        leaderboard: document.getElementById('leaderboard-screen')
     };
     
     // UI Updates
@@ -667,6 +688,96 @@
                 osc.start(now);
                 osc.stop(now + 0.3);
                 break;
+        }
+    }
+
+    // --- Global Firebase Logic (Carta Juara Global) ---
+    let db, auth, appId;
+    let isFirebaseReady = false;
+    let globalLeaderboardData = [];
+
+    async function initFirebase() {
+        if (typeof __firebase_config !== 'undefined' && typeof __app_id !== 'undefined') {
+            try {
+                appId = __app_id;
+                const app = initializeApp(JSON.parse(__firebase_config));
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                isFirebaseReady = true;
+                listenToLeaderboard();
+            } catch (error) {
+                console.error("Gagal menyambung ke pangkalan data:", error);
+            }
+        } else {
+            console.log("Sistem pangkalan data tidak dikonfigurasi. Hanya berjalan dalam mod lokal.");
+        }
+    }
+
+    function listenToLeaderboard() {
+        if (!auth.currentUser) return;
+        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'));
+        onSnapshot(q, (snapshot) => {
+            const scores = [];
+            snapshot.forEach(doc => scores.push(doc.data()));
+            
+            // Susun markah (Dari paling tinggi ke paling rendah)
+            scores.sort((a, b) => b.score - a.score || a.timestamp - b.timestamp);
+            
+            // Paparkan Top 20 Pemain Sahaja
+            globalLeaderboardData = scores.slice(0, 20);
+            renderLeaderboard();
+        }, (error) => {
+            console.error("Ralat membaca carta juara:", error);
+        });
+    }
+
+    function renderLeaderboard() {
+        const listEl = document.getElementById('leaderboard-list');
+        listEl.innerHTML = '';
+        
+        if (globalLeaderboardData.length === 0) {
+            listEl.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Belum ada rekod. Jadilah yang pertama!</p>';
+            return;
+        }
+
+        globalLeaderboardData.forEach((data, index) => {
+            let rankBadge = `<span class="w-6 font-bold text-gray-500">${index + 1}.</span>`;
+            if (index === 0) rankBadge = `<span class="w-6 text-yellow-500"><i class="fas fa-crown"></i></span>`;
+            else if (index === 1) rankBadge = `<span class="w-6 text-gray-400"><i class="fas fa-medal"></i></span>`;
+            else if (index === 2) rankBadge = `<span class="w-6 text-amber-600"><i class="fas fa-medal"></i></span>`;
+
+            const item = document.createElement('div');
+            item.className = 'flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-200';
+            item.innerHTML = `
+                <div class="flex items-center gap-2 overflow-hidden">
+                    ${rankBadge}
+                    <span class="text-sm font-bold text-gray-800 truncate" style="max-width: 150px;">${data.name || 'Peniaga'}</span>
+                </div>
+                <span class="text-sm font-extrabold text-blue-600">${data.score}</span>
+            `;
+            listEl.appendChild(item);
+        });
+    }
+
+    async function saveGlobalScore() {
+        // Simpan markah terus ke database jika lebih daripada 0
+        if (isFirebaseReady && auth && auth.currentUser && gameState.score > 0) {
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard'), {
+                    name: gameState.playerName || 'Peniaga',
+                    score: gameState.score,
+                    timestamp: Date.now()
+                });
+            } catch (error) {
+                console.error("Gagal menyimpan markah:", error);
+            }
         }
     }
 
@@ -1174,6 +1285,7 @@ Tugasan: Berikan 1 ayat pendek (maksimum 20 perkataan) yang mengandungi ucapan b
     function gameOver() {
         gameState.isRunning = false;
         saveData();
+        saveGlobalScore();
         
         // Generate personalized AI advice
         fetchAIAdvice(gameState.score, false, gameState.level);
@@ -1192,6 +1304,7 @@ Tugasan: Berikan 1 ayat pendek (maksimum 20 perkataan) yang mengandungi ucapan b
         gameState.isRunning = false;
         playSound('win');
         saveData();
+        saveGlobalScore();
         
         // Generate personalized AI advice
         fetchAIAdvice(gameState.score, true, gameState.level);
@@ -1251,6 +1364,14 @@ Tugasan: Berikan 1 ayat pendek (maksimum 20 perkataan) yang mengandungi ucapan b
     document.getElementById('how-to-btn').addEventListener('click', () => {
         screens.howto.classList.remove('hidden');
     });
+
+    document.getElementById('leaderboard-btn').addEventListener('click', () => {
+        screens.leaderboard.classList.remove('hidden');
+    });
+    
+    document.getElementById('close-leaderboard').addEventListener('click', () => {
+        screens.leaderboard.classList.add('hidden');
+    });
     
     document.getElementById('close-how-to').addEventListener('click', () => {
         screens.howto.classList.add('hidden');
@@ -1275,6 +1396,7 @@ Tugasan: Berikan 1 ayat pendek (maksimum 20 perkataan) yang mengandungi ucapan b
     // Initialize on load
     window.onload = () => {
         loadData();
+        initFirebase();
     };
 
 </script>
